@@ -259,6 +259,11 @@ class Ui_MainWindow(object):
         self.actionModel_5.setText(_translate("MainWindow", "Model 5"))
 
     def open_settings(self):
+        if self.process_active:
+            QMessageBox.warning(self.MainWindow, "Peringatan", 
+                              "Harap hentikan proses deteksi terlebih dahulu sebelum membuka pengaturan.")
+            return
+        
         self.settings_window = QtWidgets.QMainWindow()
         self.settings_ui = Settings_UI()
         self.settings_ui.setupUi(self.settings_window)
@@ -458,17 +463,29 @@ class Ui_MainWindow(object):
     def start_process(self):
         if not self.camera_active:
             self.start_camera()
-            QtCore.QTimer.singleShot(1000, self._start_process)
+            QtCore.QTimer.singleShot(1000, self._start_continuous_detection)
         else:
-            self._start_process()
+            self._start_continuous_detection()
     
-    def _start_process(self):
+    def _start_continuous_detection(self):
         self.process_active = True
         self.label_6.setText("RUNNING")
         self.label_2.setText("PROCESSING")
         self.label_2.setStyleSheet("background-color: yellow; color: black; font-weight: bold; font-size: 16pt; qproperty-alignment: 'AlignCenter';")
         
         self.idle_start_time = datetime.datetime.now()
+        
+        self.pushButton_4.setEnabled(False)
+        
+        self.detection_timer = QtCore.QTimer()
+        self.detection_timer.timeout.connect(self._process_current_frame)
+        self.detection_timer.start(500)
+        
+        print("Mode deteksi berkelanjutan aktif")
+    
+    def _process_current_frame(self):
+        if not self.process_active or not self.camera_active:
+            return
         
         if self.camera is not None and self.camera.isOpened():
             ret, frame = self.camera.read()
@@ -485,19 +502,19 @@ class Ui_MainWindow(object):
                     
                     try:
                         match_result, best_match = self.match_template(roi_img)
-                        QtCore.QTimer.singleShot(1000, lambda: self.process_result(match_result, best_match))
+                        self.process_result(match_result, best_match)
                     except Exception as e:
                         print(f"Error saat template matching: {e}")
-                        QtCore.QTimer.singleShot(1000, lambda: self.process_result(False, None))
+                        self.process_result(False, None)
                 else:
                     print("Error: ROI tidak valid")
-                    QtCore.QTimer.singleShot(1000, lambda: self.process_result(False, None))
+                    self.process_result(False, None)
             else:
                 print("Error: Tidak dapat membaca frame")
-                QtCore.QTimer.singleShot(1000, lambda: self.process_result(False, None))
+                self.process_result(False, None)
         else:
             print("Error: Kamera tidak tersedia")
-            QtCore.QTimer.singleShot(1000, lambda: self.process_result(False, None))
+            self.process_result(False, None)
     
     def match_template(self, image):
         model_templates = self.templates.get(self.current_model, [])
@@ -627,55 +644,66 @@ class Ui_MainWindow(object):
         return is_match, best_match_template
     
     def process_result(self, match_result, best_match=None):
-        if self.process_active:
-            result = "PASS" if match_result else "FAIL"
+        if not self.process_active:
+            return
+        
+        result = "PASS" if match_result else "FAIL"
+        
+        self.label_7.setText(result)
+        
+        if result == "PASS":
+            self.label_2.setText("PASS")
+            self.label_2.setStyleSheet("background-color: green; color: white; font-weight: bold; font-size: 16pt; qproperty-alignment: 'AlignCenter';")
             
-            self.label_7.setText(result)
+            print("Hasil inspeksi: PASS - Gambar cocok dengan template")
             
-            if result == "PASS":
-                self.label_2.setText("PASS")
-                self.label_2.setStyleSheet("background-color: green; color: white; font-weight: bold; font-size: 16pt; qproperty-alignment: 'AlignCenter';")
+            if self.camera_active and self.camera is not None:
+                detection_box = {
+                    "x": self.roi["x"],
+                    "y": self.roi["y"],
+                    "w": self.roi["w"],
+                    "h": self.roi["h"],
+                    "label": "",
+                    "timestamp": datetime.datetime.now().isoformat()
+                }
                 
-                print("Hasil inspeksi: PASS - Gambar cocok dengan template")
-                
-                if self.camera_active and self.camera is not None:
-                    detection_box = {
-                        "x": self.roi["x"],
-                        "y": self.roi["y"],
-                        "w": self.roi["w"],
-                        "h": self.roi["h"],
-                        "label": "",
-                        "timestamp": datetime.datetime.now().isoformat()
-                    }
-                    
-                    self.bounding_boxes = [box for box in self.bounding_boxes 
-                                          if box.get("timestamp", "") != detection_box["timestamp"]]
-                    
-                    self.bounding_boxes.append(detection_box)
-                    self.save_bounding_boxes()
-                    
-                    print("Bounding box berhasil ditambahkan pada objek yang cocok")
-                
-                print("Membuka halaman step2 dalam 2 detik...")
-                QtCore.QTimer.singleShot(2000, self.open_step2)
-            else:
-                self.label_2.setText("FAIL")
-                self.label_2.setStyleSheet("background-color: red; color: white; font-weight: bold; font-size: 16pt; qproperty-alignment: 'AlignCenter';")
-                
-                print("Hasil inspeksi: FAIL - Gambar tidak cocok dengan template")
-                
-                current_timestamp = datetime.datetime.now().isoformat()
                 self.bounding_boxes = [box for box in self.bounding_boxes 
-                                      if not (datetime.datetime.now() - datetime.datetime.fromisoformat(box.get("timestamp", current_timestamp))).total_seconds() < 5]
+                                      if box.get("timestamp", "") != detection_box["timestamp"]]
+                
+                self.bounding_boxes.append(detection_box)
                 self.save_bounding_boxes()
+                
+                print("Bounding box berhasil ditambahkan pada objek yang cocok")
+            
+            # Dalam mode deteksi berkelanjutan, jangan buka Step2 secara otomatis
+            # Pengguna harus menghentikan proses terlebih dahulu
+        else:
+            self.label_2.setText("FAIL")
+            self.label_2.setStyleSheet("background-color: red; color: white; font-weight: bold; font-size: 16pt; qproperty-alignment: 'AlignCenter';")
+            
+            print("Hasil inspeksi: FAIL - Gambar tidak cocok dengan template")
+            
+            # Hapus bounding box lama jika ada
+            current_timestamp = datetime.datetime.now().isoformat()
+            self.bounding_boxes = [box for box in self.bounding_boxes 
+                                  if not (datetime.datetime.now() - datetime.datetime.fromisoformat(box.get("timestamp", current_timestamp))).total_seconds() < 5]
+            self.save_bounding_boxes()
     
     def stop_process(self):
         self.process_active = False
+        
+        if hasattr(self, 'detection_timer') and self.detection_timer.isActive():
+            self.detection_timer.stop()
+        
         self.label_6.setText("IDLE")
         self.label_2.setText("STOPPED")
         self.label_2.setStyleSheet("background-color: gray; color: white; font-weight: bold; font-size: 16pt; qproperty-alignment: 'AlignCenter';")
         
+        self.pushButton_4.setEnabled(True)
+        
         self.idle_start_time = datetime.datetime.now()
+        
+        print("Mode deteksi berkelanjutan dinonaktifkan")
     
     def update_time(self):
         current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
