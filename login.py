@@ -10,7 +10,7 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 import sys
-from step1 import Ui_MainWindow as Step1_UI
+from main import Ui_MainWindow as Main_UI
 
 
 class Ui_MainWindow(object):
@@ -74,20 +74,18 @@ class Ui_MainWindow(object):
         password = self.password_input.text()
         
         if username == "admin" and password == "password":
-            self.open_step1()
+            self.open_main()
         else:
             self.error_label.setText("Username atau password salah!")
     
-    def open_step1(self):
+    def open_main(self):
         self.MainWindow.close()
         
-        self.step1_window = QtWidgets.QMainWindow()
-        self.step1_ui = Step1_UI()
-        self.step1_ui.setupUi(self.step1_window)
+        self.main_window = QtWidgets.QMainWindow()
+        self.main_ui = Main_UI()
+        self.main_ui.setupUi(self.main_window)
         
-        self.step1_ui.setup_camera()
-        
-        self.step1_window.show()
+        self.main_window.show()
 
 
 if __name__ == "__main__":
