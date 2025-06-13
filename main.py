@@ -675,15 +675,12 @@ class Ui_MainWindow(object):
                 
                 print("Bounding box berhasil ditambahkan pada objek yang cocok")
             
-            # Dalam mode deteksi berkelanjutan, jangan buka Step2 secara otomatis
-            # Pengguna harus menghentikan proses terlebih dahulu
         else:
             self.label_2.setText("FAIL")
             self.label_2.setStyleSheet("background-color: red; color: white; font-weight: bold; font-size: 16pt; qproperty-alignment: 'AlignCenter';")
             
             print("Hasil inspeksi: FAIL - Gambar tidak cocok dengan template")
             
-            # Hapus bounding box lama jika ada
             current_timestamp = datetime.datetime.now().isoformat()
             self.bounding_boxes = [box for box in self.bounding_boxes 
                                   if not (datetime.datetime.now() - datetime.datetime.fromisoformat(box.get("timestamp", current_timestamp))).total_seconds() < 5]
