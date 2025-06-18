@@ -902,13 +902,10 @@ class Ui_MainWindow(object):
             defect_info = best_match_details['defects']
             similarity_info = best_match_details['similarity']
             
-            # Prioritaskan nilai kecocokan di atas threshold
             if best_match_val >= self.template_matching_threshold:
-                # Nilai di atas threshold, hasilnya adalah OK
                 is_match = True
                 reason = f"Kecocokan di atas threshold ({best_match_val*100:.2f}%)"
             else:
-                # Nilai di bawah threshold, hasilnya NG
                 is_match = False
                 reason = f"Kecocokan di bawah threshold ({best_match_val*100:.2f}%)"
         else:
@@ -937,7 +934,6 @@ class Ui_MainWindow(object):
         return is_match, best_match_template
     
     def process_result(self, match_result, best_match=None):
-        """Tangani hasil proses deteksi dengan satu area deteksi"""
         if not self.process_active:
             return
         

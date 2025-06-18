@@ -9,6 +9,7 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtWidgets import QMessageBox
 import cv2
 import numpy as np
 import os
@@ -254,6 +255,12 @@ class Ui_MainWindow(object):
         
         # Mulai kamera secara otomatis
         QtCore.QTimer.singleShot(500, self.start_camera)
+
+        # Inisialisasi nilai threshold
+        self.threshold_value = 0.5
+
+        # Connect tombol untuk simpan pengaturan
+        self.toolButton_3.clicked.connect(self.save_settings)
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -594,6 +601,83 @@ class Ui_MainWindow(object):
             print("Error: Nilai ROI harus berupa angka")
         except Exception as e:
             print(f"Error saat menerapkan ROI: {e}")
+
+    def save_settings(self):
+        """Simpan pengaturan dan tampilkan popup konfirmasi"""
+        print("Fungsi save_settings() dipanggil")
+        
+        try:
+            # Ambil nilai threshold dari input
+            threshold_text = self.textEdit_2.toPlainText()
+            print(f"Nilai threshold dari input: {threshold_text}")
+            
+            if threshold_text:
+                # Konversi nilai threshold
+                if threshold_text.endswith('%'):
+                    threshold = float(threshold_text.rstrip('%')) / 100.0
+                else:
+                    threshold = float(threshold_text)
+                
+                print(f"Nilai threshold setelah konversi: {threshold}")
+                
+                # Validasi nilai threshold
+                if 0 <= threshold <= 1:
+                    # Simpan nilai threshold
+                    self.threshold_value = threshold
+                    
+                    # Tampilkan popup konfirmasi
+                    print("Menampilkan popup konfirmasi...")
+                    QMessageBox.information(
+                        self.MainWindow,
+                        "Sukses",
+                        f"Threshold berhasil diubah menjadi {threshold*100:.2f}%",
+                        QMessageBox.Ok
+                    )
+                    
+                    # Update label threshold saat ini
+                    self.label_17.setText(f"Nilai Threshold: {threshold*100:.2f}%")
+                    
+                    print(f"Threshold berhasil diubah menjadi: {threshold*100:.2f}%")
+                else:
+                    # Tampilkan pesan error jika nilai tidak valid
+                    QMessageBox.warning(
+                        self.MainWindow,
+                        "Peringatan",
+                        "Threshold harus berada di antara 0 dan 1 (atau 0% dan 100%)",
+                        QMessageBox.Ok
+                    )
+            
+            # Simpan pengaturan ROI jika ada perubahan
+            try:
+                x = int(self.label_6.text())
+                y = int(self.label_12.text())
+                w = int(self.label_8.text())
+                h = int(self.label_11.text())
+                
+                # Pastikan nilai ROI valid
+                if w > 0 and h > 0:
+                    self.roi = {"x": x, "y": y, "w": w, "h": h}
+                    print(f"ROI berhasil diubah: x={x}, y={y}, w={w}, h={h}")
+            except:
+                pass
+            
+            # Simpan model yang dipilih
+            try:
+                self.current_model = int(self.comboBox.currentText())
+                print(f"Model aktif: {self.current_model}")
+            except:
+                pass
+            
+        except Exception as e:
+            print(f"Error dalam save_settings: {e}")
+            import traceback
+            traceback.print_exc()
+            QMessageBox.critical(
+                self.MainWindow,
+                "Error",
+                f"Terjadi kesalahan saat menyimpan pengaturan: {str(e)}",
+                QMessageBox.Ok
+            )
 
 
 if __name__ == "__main__":
