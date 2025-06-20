@@ -7,7 +7,7 @@ import numpy as np
 import json
 import os
 import glob
-from PyQt5.QtWidgets import QMessageBox
+from PyQt5.QtWidgets import QMessageBox, QAction, QMenu
 
 
 class Ui_MainWindow(object):
@@ -132,6 +132,77 @@ class Ui_MainWindow(object):
         self.saveTemplateButton.setText("Save Template")
         self.saveTemplateButton.setObjectName("saveTemplateButton")
         self.saveTemplateButton.clicked.connect(self.save_current_roi_as_template)
+        self.label_12 = QtWidgets.QLabel(self.centralwidget)
+        self.label_12.setGeometry(QtCore.QRect(10, 140, 1171, 20))
+        self.label_12.setStyleSheet("background-color: black;\n"
+                           "color: white;\n"
+                           "font-weight: bold;\n"
+                           "font-size: 12pt;\n"
+                           "qproperty-alignment: \'AlignCenter\';\n")
+        self.label_12.setText("PATTERN 1")
+        self.label_12.setObjectName("label_12")
+        
+        # Inisialisasi nilai threshold SEBELUM membuat komponen UI yang menggunakannya
+        self.template_matching_threshold = 0.5
+        
+        # Container untuk progress bar dan threshold indicator
+        self.progress_container = QtWidgets.QFrame(self.centralwidget)
+        self.progress_container.setGeometry(QtCore.QRect(1200, 480, 251, 40))
+        self.progress_container.setFrameShape(QtWidgets.QFrame.NoFrame)
+        self.progress_container.setObjectName("progress_container")
+        
+        # Progress bar untuk nilai kecocokan
+        self.match_progress_bar = QtWidgets.QProgressBar(self.progress_container)
+        self.match_progress_bar.setGeometry(QtCore.QRect(0, 0, 251, 40))
+        self.match_progress_bar.setMinimum(0)
+        self.match_progress_bar.setMaximum(100)
+        self.match_progress_bar.setValue(0)
+        self.match_progress_bar.setTextVisible(True)
+        self.match_progress_bar.setFormat("%v%")
+        self.match_progress_bar.setObjectName("match_progress_bar")
+        
+        # Styling progress bar dengan warna hijau saja
+        self.match_progress_bar.setStyleSheet("""
+            QProgressBar {
+                border: 2px solid grey;
+                border-radius: 5px;
+                text-align: center;
+                font-size: 16pt;
+                font-weight: bold;
+                background-color: #f0f0f0;
+            }
+            
+            QProgressBar::chunk {
+                background-color: #00AA00;  /* Warna hijau solid */
+            }
+        """)
+        
+        # Kotak indikator threshold
+        self.threshold_box = QtWidgets.QFrame(self.progress_container)
+        self.threshold_box.setObjectName("threshold_box")
+        self.threshold_box.setStyleSheet("background-color: transparent; border: 3px solid black;")
+        
+        # Label untuk nilai persentase di bawah progress bar
+        self.label_match_percentage = QtWidgets.QLabel(self.centralwidget)
+        self.label_match_percentage.setGeometry(QtCore.QRect(1200, 525, 251, 30))
+        self.label_match_percentage.setStyleSheet("font-size: 14pt; font-weight: bold; qproperty-alignment: 'AlignCenter';")
+        self.label_match_percentage.setText("0.00%")
+        self.label_match_percentage.setObjectName("label_match_percentage")
+        
+        # Label judul untuk nilai kecocokan
+        self.label_match_title = QtWidgets.QLabel(self.centralwidget)
+        self.label_match_title.setGeometry(QtCore.QRect(1200, 450, 251, 30))
+        self.label_match_title.setStyleSheet("font-size: 14pt; font-weight: bold; qproperty-alignment: 'AlignCenter';")
+        self.label_match_title.setText("Nilai Kecocokan")
+        self.label_match_title.setObjectName("label_match_title")
+        
+        # # Label nilai threshold
+        # self.label_threshold_marker = QtWidgets.QLabel(self.centralwidget)
+        # self.label_threshold_marker.setGeometry(QtCore.QRect(1200, 455, 251, 20))
+        # self.label_threshold_marker.setStyleSheet("font-size: 10pt; color: #555; font-weight: bold; qproperty-alignment: 'AlignRight';")
+        # self.label_threshold_marker.setText(f"Threshold: {int(self.template_matching_threshold * 100)}%")
+        # self.label_threshold_marker.setObjectName("label_threshold_marker")
+        
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 1470, 36))
@@ -140,10 +211,14 @@ class Ui_MainWindow(object):
         self.menuChange_Password.setObjectName("menuChange_Password")
         self.menuModels = QtWidgets.QMenu(self.menubar)
         self.menuModels.setObjectName("menuModels")
+        self.menuModels.setTitle("Models")
         self.menuUser = QtWidgets.QMenu(self.menubar)
         self.menuUser.setObjectName("menuUser")
         self.menuCamera = QtWidgets.QMenu(self.menubar)
         self.menuCamera.setObjectName("menuCamera")
+        self.menuPattern = QtWidgets.QMenu(self.menubar)
+        self.menuPattern.setObjectName("menuPattern")
+        self.menuPattern.setTitle("Pattern")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
@@ -158,6 +233,21 @@ class Ui_MainWindow(object):
         self.actionModel_4.setObjectName("actionModel_4")
         self.actionModel_5 = QtWidgets.QAction(MainWindow)
         self.actionModel_5.setObjectName("actionModel_5")
+        self.actionPattern_1 = QAction(MainWindow)
+        self.actionPattern_1.setText("Pattern 1")
+        self.actionPattern_1.setObjectName("actionPattern_1")
+        self.actionPattern_2 = QAction(MainWindow)
+        self.actionPattern_2.setText("Pattern 2")
+        self.actionPattern_2.setObjectName("actionPattern_2")
+        self.actionPattern_3 = QAction(MainWindow)
+        self.actionPattern_3.setText("Pattern 3")
+        self.actionPattern_3.setObjectName("actionPattern_3")
+        self.actionPattern_4 = QAction(MainWindow)
+        self.actionPattern_4.setText("Pattern 4")
+        self.actionPattern_4.setObjectName("actionPattern_4")
+        self.actionPattern_5 = QAction(MainWindow)
+        self.actionPattern_5.setText("Pattern 5")
+        self.actionPattern_5.setObjectName("actionPattern_5")
         self.menuModels.addAction(self.actionModel_1)
         self.menuModels.addAction(self.actionModel_2)
         self.menuModels.addAction(self.actionModel_3)
@@ -167,6 +257,14 @@ class Ui_MainWindow(object):
         self.menubar.addAction(self.menuModels.menuAction())
         self.menubar.addAction(self.menuUser.menuAction())
         self.menubar.addAction(self.menuCamera.menuAction())
+        self.menubar.addAction(self.menuPattern.menuAction())
+
+        # Tambahkan pattern ke menu Pattern, bukan menu Models
+        self.menuPattern.addAction(self.actionPattern_1)
+        self.menuPattern.addAction(self.actionPattern_2)
+        self.menuPattern.addAction(self.actionPattern_3)
+        self.menuPattern.addAction(self.actionPattern_4)
+        self.menuPattern.addAction(self.actionPattern_5)
 
         self.MainWindow = MainWindow
         
@@ -219,10 +317,32 @@ class Ui_MainWindow(object):
         self.label_7.setText("WAITING")
         self.label_9.setText("0")
         
+        # Inisialisasi semua atribut terlebih dahulu
         self.models_dir = "models"
         self.current_model = 1
+        self.current_pattern = 1
         self.templates = {}
-        self.template_matching_threshold = 0.5
+        
+        # Load nama model terlebih dahulu
+        self.model_names = {}
+        self.load_model_names()
+        
+        # Load nama pattern
+        self.pattern_names = {}
+        self.load_pattern_names()
+        
+        # Kamus untuk menyimpan ROI per model dan pattern
+        self.roi_per_pattern = {}
+        
+        # Load ROI dari file jika ada
+        self.load_roi_settings()
+        
+        # Kemudian load templates
+        self.load_templates()
+        
+        # Update label setelah semua inisialisasi selesai
+        self.update_model_label()
+        self.update_pattern_label()
         
         self.actionModel_1.triggered.connect(lambda: self.select_model(1))
         self.actionModel_2.triggered.connect(lambda: self.select_model(2))
@@ -230,10 +350,21 @@ class Ui_MainWindow(object):
         self.actionModel_4.triggered.connect(lambda: self.select_model(4))
         self.actionModel_5.triggered.connect(lambda: self.select_model(5))
         
-        self.load_templates()
-
+        # Koneksi action Pattern ke fungsi handler
+        self.actionPattern_1.triggered.connect(lambda: self.select_pattern(1))
+        self.actionPattern_2.triggered.connect(lambda: self.select_pattern(2))
+        self.actionPattern_3.triggered.connect(lambda: self.select_pattern(3))
+        self.actionPattern_4.triggered.connect(lambda: self.select_pattern(4))
+        self.actionPattern_5.triggered.connect(lambda: self.select_pattern(5))
+        
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
+        
+        # Inisialisasi nilai kecocokan
+        self.current_match_value = 0.0
+        
+        # Update tampilan threshold
+        self.update_threshold_marker()
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
@@ -260,7 +391,14 @@ class Ui_MainWindow(object):
         self.actionModel_3.setText(_translate("MainWindow", "Model 3"))
         self.actionModel_4.setText(_translate("MainWindow", "Model 4"))
         self.actionModel_5.setText(_translate("MainWindow", "Model 5"))
+        self.actionPattern_1.setText(_translate("MainWindow", "Pattern 1"))
+        self.actionPattern_2.setText(_translate("MainWindow", "Pattern 2"))
+        self.actionPattern_3.setText(_translate("MainWindow", "Pattern 3"))
+        self.actionPattern_4.setText(_translate("MainWindow", "Pattern 4"))
+        self.actionPattern_5.setText(_translate("MainWindow", "Pattern 5"))
         self.saveTemplateButton.setText(_translate("MainWindow", "Simpan Template"))
+        self.label_12.setText(_translate("MainWindow", "PATTERN 1"))
+        self.label_match_title.setText(_translate("MainWindow", "Nilai Kecocokan"))
 
     def open_settings(self):
         if self.process_active:
@@ -290,6 +428,46 @@ class Ui_MainWindow(object):
         
         self.settings_ui.toolButton_3.clicked.connect(self.save_settings)
         
+        # Set nama model saat ini ke textEdit
+        model_name = self.model_names.get(str(self.current_model), f"Model {self.current_model}")
+        self.settings_ui.textEdit.setText(model_name)
+        
+        # Tambahkan informasi pattern ke settings UI
+        self.settings_ui.comboBox_2 = QtWidgets.QComboBox(self.settings_ui.centralwidget)
+        self.settings_ui.comboBox_2.setGeometry(QtCore.QRect(1020, 460, 191, 26))
+        self.settings_ui.comboBox_2.setObjectName("comboBox_2")
+        for i in range(1, 6):
+            self.settings_ui.comboBox_2.addItem(f"{i}")
+        
+        self.settings_ui.label_18 = QtWidgets.QLabel(self.settings_ui.centralwidget)
+        self.settings_ui.label_18.setGeometry(QtCore.QRect(890, 460, 101, 16))
+        self.settings_ui.label_18.setText("Pattern :")
+        self.settings_ui.label_18.setObjectName("label_18")
+        
+        # Set current pattern
+        self.settings_ui.comboBox_2.setCurrentIndex(self.current_pattern - 1)
+        
+        # Set nama pattern saat ini ke textEdit
+        model_key = str(self.current_model)
+        pattern_key = str(self.current_pattern)
+        if model_key in self.pattern_names and pattern_key in self.pattern_names[model_key]:
+            pattern_name = self.pattern_names[model_key][pattern_key]
+        else:
+            pattern_name = f"Pattern {self.current_pattern}"
+        
+        self.settings_ui.textEdit_3 = QtWidgets.QTextEdit(self.settings_ui.centralwidget)
+        self.settings_ui.textEdit_3.setGeometry(QtCore.QRect(1020, 490, 181, 31))
+        self.settings_ui.textEdit_3.setObjectName("textEdit_3")
+        self.settings_ui.textEdit_3.setText(pattern_name)
+        
+        self.settings_ui.label_19 = QtWidgets.QLabel(self.settings_ui.centralwidget)
+        self.settings_ui.label_19.setGeometry(QtCore.QRect(890, 490, 121, 16))
+        self.settings_ui.label_19.setText("Nama Pattern :")
+        self.settings_ui.label_19.setObjectName("label_19")
+        
+        # Connect pattern combobox
+        self.settings_ui.comboBox_2.currentIndexChanged.connect(self.settings_pattern_changed)
+        
         self.settings_window.show()
     
     def toggle_camera(self):
@@ -312,20 +490,24 @@ class Ui_MainWindow(object):
         QtCore.QTimer.singleShot(500, self.center_roi)
     
     def center_roi(self):
-        """Tempatkan ROI di tengah dengan ukuran yang lebih besar"""
-        # Gunakan ukuran ROI yang lebih besar (300x300 piksel)
-        roi_width = 300
-        roi_height = 300
+        """Tempatkan ROI di tengah dengan ukuran yang fleksibel"""
+        # Gunakan ukuran yang proporsional dengan ukuran frame
+        frame_width = self.camera_geometry["width"]
+        frame_height = self.camera_geometry["height"]
+        
+        # Ukuran ROI sekitar 60% dari ukuran frame (bisa disesuaikan)
+        roi_width = int(frame_width * 0.6)
+        roi_height = int(frame_height * 0.6)
         
         # Hitung posisi tengah
-        roi_x = (self.camera_geometry["width"] - roi_width) // 2
-        roi_y = (self.camera_geometry["height"] - roi_height) // 2
+        roi_x = (frame_width - roi_width) // 2
+        roi_y = (frame_height - roi_height) // 2
         
         # Pastikan ROI berada dalam batas frame
         roi_x = max(0, roi_x)
         roi_y = max(0, roi_y)
-        roi_width = min(roi_width, self.camera_geometry["width"] - roi_x)
-        roi_height = min(roi_height, self.camera_geometry["height"] - roi_y)
+        roi_width = min(roi_width, frame_width - roi_x)
+        roi_height = min(roi_height, frame_height - roi_y)
         
         self.roi = {"x": roi_x, "y": roi_y, "w": roi_width, "h": roi_height}
         
@@ -592,22 +774,40 @@ class Ui_MainWindow(object):
                         self.process_result(match_result, best_match)
                     except Exception as e:
                         print(f"Error saat template matching: {e}")
+                        import traceback
+                        traceback.print_exc()
                         self.process_result(False, None)
+                        
+                        # Reset nilai kecocokan jika terjadi error
+                        self.current_match_value = 0.0
+                        self.update_match_value_display()
                 else:
                     print("Error: ROI tidak valid")
                     self.process_result(False, None)
+                    
+                    # Reset nilai kecocokan jika ROI tidak valid
+                    self.current_match_value = 0.0
+                    self.update_match_value_display()
             else:
                 print("Error: Tidak dapat membaca frame")
                 self.process_result(False, None)
+                
+                # Reset nilai kecocokan jika tidak dapat membaca frame
+                self.current_match_value = 0.0
+                self.update_match_value_display()
         else:
             print("Error: Kamera tidak tersedia")
             self.process_result(False, None)
+            
+            # Reset nilai kecocokan jika kamera tidak tersedia
+            self.current_match_value = 0.0
+            self.update_match_value_display()
     
     def match_template(self, image):
-        # Hanya ambil template dari model yang dipilih saat ini
-        model_templates = self.templates.get(self.current_model, [])
+        # Dapatkan template untuk model dan pattern saat ini
+        model_templates = self.templates.get(self.current_model, {}).get(self.current_pattern, [])
         if not model_templates:
-            print(f"Tidak ada template di Model {self.current_model}")
+            print(f"Tidak ada template di Model {self.current_model}, Pattern {self.current_pattern}")
             return False, None
         
         best_match_val = -1
@@ -851,7 +1051,7 @@ class Ui_MainWindow(object):
         img_features = extract_features(image_copy)
         
         # Log informasi tentang jumlah template yang akan diperiksa
-        print(f"Akan memeriksa {len(model_templates)} template dari Model {self.current_model}")
+        print(f"Akan memeriksa {len(model_templates)} template dari Model {self.current_model}, Pattern {self.current_pattern}")
         
         # Hanya periksa template dari model yang dipilih
         for i, template_data in enumerate(model_templates):
@@ -891,6 +1091,12 @@ class Ui_MainWindow(object):
                         'template': template_features
                     }
                 }
+        
+        # Di bagian akhir fungsi, setelah mendapatkan best_match_val:
+        self.current_match_value = best_match_val
+        
+        # Update label nilai kecocokan
+        self.update_match_value_display()
         
         print("\nHasil Analisis Akhir:")
         print(f"Nilai kecocokan terbaik: {best_match_val*100:.2f}% (Threshold: {self.template_matching_threshold*100:.2f}%)")
@@ -985,6 +1191,10 @@ class Ui_MainWindow(object):
         
         self.idle_start_time = datetime.datetime.now()
         
+        # Reset nilai kecocokan saat proses dihentikan
+        self.current_match_value = 0.0
+        self.update_match_value_display()
+        
         print("Mode deteksi berkelanjutan dinonaktifkan")
     
     def update_time(self):
@@ -1003,6 +1213,32 @@ class Ui_MainWindow(object):
             h = int(self.settings_ui.label_11.text())
             self.roi = {"x": x, "y": y, "w": w, "h": h}
             print(f"ROI berhasil diperbarui dari settings: x={x}, y={y}, w={w}, h={h}")
+            
+            # Simpan ROI untuk model dan pattern saat ini
+            model_key = str(self.current_model)
+            pattern_key = str(self.current_pattern)
+            
+            if model_key not in self.roi_per_pattern:
+                self.roi_per_pattern[model_key] = {}
+            
+            self.roi_per_pattern[model_key][pattern_key] = {"x": x, "y": y, "w": w, "h": h}
+            self.save_roi_settings()
+            
+            # Perbarui nama model jika diubah di settings
+            try:
+                if hasattr(self.settings_ui, 'model_names'):
+                    self.model_names = self.settings_ui.model_names.copy()
+                    self.update_model_label()
+            except Exception as e:
+                print(f"Error saat mengambil nama model dari settings: {e}")
+            
+            # Perbarui nama pattern jika diubah di settings
+            try:
+                if hasattr(self.settings_ui, 'pattern_names'):
+                    self.pattern_names = self.settings_ui.pattern_names.copy()
+                    self.update_pattern_label()
+            except Exception as e:
+                print(f"Error saat mengambil nama pattern dari settings: {e}")
         except (ValueError, AttributeError) as e:
             print(f"Error saat mengambil ROI dari settings: {e}")
 
@@ -1083,91 +1319,433 @@ class Ui_MainWindow(object):
             self.step2_ui.labelTime.setText(current_time)
 
     def load_templates(self):
-        """Muat template dari direktori models dengan ukuran asli"""
+        """Muat template dari direktori models dengan struktur baru"""
         if not os.path.exists(self.models_dir):
             os.makedirs(self.models_dir)
-            for i in range(1, 6):
-                os.makedirs(os.path.join(self.models_dir, f"model{i}"), exist_ok=True)
+            for model in range(1, 6):
+                model_dir = os.path.join(self.models_dir, f"model{model}")
+                os.makedirs(model_dir, exist_ok=True)
+                for pattern in range(1, 6):
+                    pattern_dir = os.path.join(model_dir, f"pattern{pattern}")
+                    os.makedirs(pattern_dir, exist_ok=True)
             
             QMessageBox.information(self.MainWindow, "Info", 
-                                   f"Folder models telah dibuat di {os.path.abspath(self.models_dir)}.\n"
-                                   "Silakan tambahkan gambar template di folder tersebut.")
+                                   f"Struktur folder models telah dibuat di {os.path.abspath(self.models_dir)}.\n"
+                                   "Silakan tambahkan gambar template di folder models/model[1-5]/pattern[1-5]/")
         
         self.templates = {}
-        for i in range(1, 6):
-            model_dir = os.path.join(self.models_dir, f"model{i}")
+        for model in range(1, 6):
+            model_dir = os.path.join(self.models_dir, f"model{model}")
             os.makedirs(model_dir, exist_ok=True)
             
-            image_files = glob.glob(os.path.join(model_dir, "*.jpg")) + \
-                         glob.glob(os.path.join(model_dir, "*.png")) + \
-                         glob.glob(os.path.join(model_dir, "*.jpeg"))
+            self.templates[model] = {}
             
-            model_templates = []
-            for img_path in image_files:
-                try:
-                    # Muat template dengan ukuran asli
-                    template = cv2.imread(img_path)
-                    if template is not None:
-                        if len(template.shape) == 2:
-                            template = cv2.cvtColor(template, cv2.COLOR_GRAY2BGR)
-                        elif template.shape[2] == 4:
-                            template = cv2.cvtColor(template, cv2.COLOR_RGBA2BGR)
-                        
-                        # Simpan template dengan ukuran asli
-                        model_templates.append({
-                            "path": img_path,
-                            "image": template,
-                            "name": os.path.basename(img_path),
-                            "original_size": template.shape[:2]  # Simpan ukuran asli (height, width)
-                        })
-                        print(f"Template berhasil dimuat: {img_path} (ukuran: {template.shape})")
-                except Exception as e:
-                    print(f"Error saat memuat template {img_path}: {e}")
-            
-            self.templates[i] = model_templates
+            for pattern in range(1, 6):
+                pattern_dir = os.path.join(model_dir, f"pattern{pattern}")
+                os.makedirs(pattern_dir, exist_ok=True)
+                
+                image_files = glob.glob(os.path.join(pattern_dir, "*.jpg")) + \
+                             glob.glob(os.path.join(pattern_dir, "*.png")) + \
+                             glob.glob(os.path.join(pattern_dir, "*.jpeg"))
+                
+                pattern_templates = []
+                for img_path in image_files:
+                    try:
+                        # Muat template dengan ukuran asli
+                        template = cv2.imread(img_path)
+                        if template is not None:
+                            if len(template.shape) == 2:
+                                template = cv2.cvtColor(template, cv2.COLOR_GRAY2BGR)
+                            elif template.shape[2] == 4:
+                                template = cv2.cvtColor(template, cv2.COLOR_RGBA2BGR)
+                            
+                            # Simpan template dengan ukuran asli
+                            pattern_templates.append({
+                                "path": img_path,
+                                "image": template,
+                                "name": os.path.basename(img_path),
+                                "original_size": template.shape[:2]
+                            })
+                            print(f"Template berhasil dimuat: {img_path} (ukuran: {template.shape})")
+                    except Exception as e:
+                        print(f"Error saat memuat template {img_path}: {e}")
+                
+                self.templates[model][pattern] = pattern_templates
         
-        self.update_model_label()
+        # Update labels
+        try:
+            if hasattr(self, 'model_names'):
+                self.update_model_label()
+            if hasattr(self, 'pattern_names') and hasattr(self, 'current_pattern'):
+                self.update_pattern_label()
+            else:
+                print("Peringatan: model_names atau pattern_names belum diinisialisasi")
+                self.label_11.setText(f"MODEL {self.current_model}")
+                if hasattr(self, 'current_pattern'):
+                    self.label_12.setText(f"PATTERN {self.current_pattern}")
+        except Exception as e:
+            print(f"Error saat memperbarui label: {e}")
+            self.label_11.setText(f"MODEL {self.current_model}")
+            if hasattr(self, 'current_pattern'):
+                self.label_12.setText(f"PATTERN 1")
     
     def select_model(self, model_number):
         if 1 <= model_number <= 5:
             self.current_model = model_number
             self.update_model_label()
             
+            # Reset template cache saat model berubah
+            if hasattr(self, 'template_cache'):
+                self.template_cache = {}
+            
+            # Jika dalam mode deteksi, segera inisialisasi cache baru
+            if self.process_active:
+                self._init_template_cache()
+            
             if len(self.templates.get(model_number, [])) == 0:
                 QMessageBox.warning(self.MainWindow, "Peringatan", 
                                    f"Tidak ada template di Model {model_number}.\n"
-                                   f"Silakan tambahkan gambar template di folder models/model{model_number}/")
+                                   f"Silakan tambahkan gambar template di folder models/model{model_number}/pattern[1-5]/")
     
     def update_model_label(self):
+        """Update label model dan nama model di header"""
         self.label_11.setText(f"MODEL {self.current_model}")
         
+        # Update nama model di header (label_3)
+        if hasattr(self, 'model_names'):
+            model_name = self.model_names.get(str(self.current_model), f"Model {self.current_model}")
+        else:
+            model_name = f"Model {self.current_model}"
+        
+        self.label_3.setText(model_name)
+        
         template_count = len(self.templates.get(self.current_model, []))
-        print(f"Model {self.current_model} dipilih dengan {template_count} template")
+        print(f"Model {self.current_model} ({model_name}) dipilih dengan {template_count} template")
     
     def save_settings(self):
+        """Simpan pengaturan dan tampilkan popup konfirmasi"""
+        print("Fungsi save_settings() dipanggil")
+        
         try:
-            threshold_text = self.settings_ui.textEdit_2.toPlainText()
-            if threshold_text:
-                if threshold_text.endswith('%'):
-                    try:
-                        threshold = float(threshold_text.rstrip('%')) / 100.0
-                    except ValueError:
-                        threshold = float(threshold_text)
-                else:
-                    threshold = float(threshold_text)
-                
-                if 0 <= threshold <= 1:
-                    self.template_matching_threshold = threshold
-                    print(f"Threshold template matching berhasil diubah menjadi: {threshold*100:.2f}%")
-                else:
-                    QMessageBox.warning(self.settings_window, "Peringatan", 
-                                      "Threshold harus berada di antara 0 dan 1 (atau 0% dan 100%)")
+            # Simpan nama model
+            model_name = self.settings_ui.textEdit.toPlainText().strip()
+            if model_name:
+                self.model_names[str(self.current_model)] = model_name
+                self.save_model_names()
+                print(f"Nama model {self.current_model} diubah menjadi: {model_name}")
             
-            model_index = self.settings_ui.comboBox.currentIndex()
-            if 0 <= model_index <= 4:
-                self.select_model(model_index + 1)
+            # Simpan nama pattern
+            pattern_name = self.settings_ui.textEdit_3.toPlainText().strip()
+            if pattern_name:
+                model_key = str(self.current_model)
+                pattern_key = str(self.current_pattern)
+                
+                if model_key not in self.pattern_names:
+                    self.pattern_names[model_key] = {}
+                
+                self.pattern_names[model_key][pattern_key] = pattern_name
+                self.save_pattern_names()
+                print(f"Nama pattern {self.current_pattern} diubah menjadi: {pattern_name}")
+            
+            # Simpan ROI untuk model dan pattern saat ini
+            try:
+                x = int(self.settings_ui.label_6.text())
+                y = int(self.settings_ui.label_12.text())
+                w = int(self.settings_ui.label_8.text())
+                h = int(self.settings_ui.label_11.text())
+                
+                if w > 0 and h > 0:
+                    model_key = str(self.current_model)
+                    pattern_key = str(self.current_pattern)
+                    
+                    if model_key not in self.roi_per_pattern:
+                        self.roi_per_pattern[model_key] = {}
+                    
+                    self.roi_per_pattern[model_key][pattern_key] = {"x": x, "y": y, "w": w, "h": h}
+                    self.save_roi_settings()
+                    
+                    # Update ROI saat ini jika model dan pattern yang diubah adalah yang aktif
+                    if self.current_model == int(model_key) and self.current_pattern == int(pattern_key):
+                        self.roi = {"x": x, "y": y, "w": w, "h": h}
+                    
+                    print(f"ROI untuk Model {model_key}, Pattern {pattern_key} berhasil diubah: x={x}, y={y}, w={w}, h={h}")
+            except ValueError:
+                print("Error: Nilai ROI harus berupa angka")
+            
+            # Simpan threshold
+            try:
+                threshold_text = self.settings_ui.textEdit_2.toPlainText()
+                if threshold_text:
+                    if threshold_text.endswith('%'):
+                        threshold = float(threshold_text.rstrip('%')) / 100.0
+                    else:
+                        threshold = float(threshold_text)
+                    
+                    if 0 <= threshold <= 1:
+                        self.template_matching_threshold = threshold
+                        # Update marker threshold setelah nilai threshold diubah
+                        self.update_threshold_marker()
+                        print(f"Threshold template matching berhasil diubah menjadi: {threshold*100:.2f}%")
+            except ValueError:
+                print("Error: Format threshold tidak valid")
+            
+            # Tampilkan popup konfirmasi
+            QMessageBox.information(
+                self.MainWindow,
+                "Sukses",
+                "Pengaturan berhasil disimpan",
+                QMessageBox.Ok
+            )
+            
+            # Update label setelah pengaturan disimpan
+            self.update_model_label()
+            self.update_pattern_label()
+            
         except Exception as e:
-            print(f"Error saat menyimpan pengaturan: {e}")
+            print(f"Error dalam save_settings: {e}")
+            import traceback
+            traceback.print_exc()
+            QMessageBox.critical(
+                self.MainWindow,
+                "Error",
+                f"Terjadi kesalahan saat menyimpan pengaturan: {str(e)}",
+                QMessageBox.Ok
+            )
+    
+    def settings_pattern_changed(self):
+        """Handler saat pattern berubah di settings"""
+        try:
+            new_pattern = int(self.settings_ui.comboBox_2.currentText())
+            old_pattern = self.current_pattern
+            
+            if new_pattern != old_pattern:
+                # Update pattern saat ini
+                self.current_pattern = new_pattern
+                
+                # Update nama pattern di textEdit
+                model_key = str(self.current_model)
+                pattern_key = str(self.current_pattern)
+                if model_key in self.pattern_names and pattern_key in self.pattern_names[model_key]:
+                    pattern_name = self.pattern_names[model_key][pattern_key]
+                else:
+                    pattern_name = f"Pattern {self.current_pattern}"
+                
+                self.settings_ui.textEdit_3.setText(pattern_name)
+                
+                # Update ROI sesuai dengan pattern yang dipilih
+                if model_key in self.roi_per_pattern and pattern_key in self.roi_per_pattern[model_key]:
+                    roi_settings = self.roi_per_pattern[model_key][pattern_key]
+                    
+                    # Update input fields
+                    self.settings_ui.label_6.setText(str(roi_settings["x"]))
+                    self.settings_ui.label_12.setText(str(roi_settings["y"]))
+                    self.settings_ui.label_8.setText(str(roi_settings["w"]))
+                    self.settings_ui.label_11.setText(str(roi_settings["h"]))
+                
+                print(f"Pattern di settings berubah ke: {new_pattern}")
+        except Exception as e:
+            print(f"Error saat mengubah pattern di settings: {e}")
+    
+    def load_pattern_names(self):
+        """Muat nama pattern dari file jika ada, atau gunakan default"""
+        try:
+            if os.path.exists("pattern_names.json"):
+                import json
+                with open("pattern_names.json", "r") as f:
+                    self.pattern_names = json.load(f)
+                    print("Nama pattern berhasil dimuat dari file")
+            else:
+                # Default nama pattern
+                self.pattern_names = {
+                    "1": {
+                        "1": "Whole Device",
+                        "2": "Screen",
+                        "3": "Keyboard",
+                        "4": "Touchpad",
+                        "5": "Ports"
+                    },
+                    "2": {
+                        "1": "Pattern 1",
+                        "2": "Pattern 2",
+                        "3": "Pattern 3",
+                        "4": "Pattern 4",
+                        "5": "Pattern 5"
+                    },
+                    "3": {
+                        "1": "Pattern 1",
+                        "2": "Pattern 2",
+                        "3": "Pattern 3",
+                        "4": "Pattern 4",
+                        "5": "Pattern 5"
+                    },
+                    "4": {
+                        "1": "Pattern 1",
+                        "2": "Pattern 2",
+                        "3": "Pattern 3",
+                        "4": "Pattern 4",
+                        "5": "Pattern 5"
+                    },
+                    "5": {
+                        "1": "Pattern 1",
+                        "2": "Pattern 2",
+                        "3": "Pattern 3",
+                        "4": "Pattern 4",
+                        "5": "Pattern 5"
+                    }
+                }
+                self.save_pattern_names()
+                print("Menggunakan nama pattern default")
+        except Exception as e:
+            print(f"Error saat memuat nama pattern: {e}")
+    
+    def save_pattern_names(self):
+        """Simpan nama pattern ke file"""
+        try:
+            import json
+            with open("pattern_names.json", "w") as f:
+                json.dump(self.pattern_names, f)
+            print("Nama pattern berhasil disimpan ke file")
+        except Exception as e:
+            print(f"Error saat menyimpan nama pattern: {e}")
+    
+    def load_roi_settings(self):
+        """Muat pengaturan ROI untuk setiap model dan pattern"""
+        try:
+            if os.path.exists("roi_settings.json"):
+                import json
+                with open("roi_settings.json", "r") as f:
+                    self.roi_per_pattern = json.load(f)
+                    print("Pengaturan ROI berhasil dimuat dari file")
+            else:
+                # Inisialisasi struktur default
+                for model in range(1, 6):
+                    for pattern in range(1, 6):
+                        self.set_default_roi(model, pattern)
+                
+                self.save_roi_settings()
+                print("Menggunakan pengaturan ROI default")
+        except Exception as e:
+            print(f"Error saat memuat pengaturan ROI: {e}")
+            # Inisialisasi dengan nilai default jika terjadi error
+            for model in range(1, 6):
+                for pattern in range(1, 6):
+                    self.set_default_roi(model, pattern)
+    
+    def set_default_roi(self, model, pattern):
+        """Set ROI default untuk model dan pattern tertentu dengan ukuran fleksibel"""
+        # Ukuran yang proporsional dengan ukuran frame
+        frame_width = self.camera_geometry["width"]
+        frame_height = self.camera_geometry["height"]
+        
+        # Ukuran ROI sekitar 60% dari ukuran frame
+        roi_width = int(frame_width * 0.6)
+        roi_height = int(frame_height * 0.6)
+        
+        # Tempatkan ROI di tengah
+        roi_x = (frame_width - roi_width) // 2
+        roi_y = (frame_height - roi_height) // 2
+        
+        # Buat key untuk model dan pattern
+        model_key = str(model)
+        pattern_key = str(pattern)
+        
+        # Pastikan kamus untuk model sudah ada
+        if model_key not in self.roi_per_pattern:
+            self.roi_per_pattern[model_key] = {}
+        
+        # Set nilai ROI
+        self.roi_per_pattern[model_key][pattern_key] = {
+            "x": roi_x,
+            "y": roi_y,
+            "w": roi_width,
+            "h": roi_height
+        }
+    
+    def save_roi_settings(self):
+        """Simpan pengaturan ROI ke file"""
+        try:
+            import json
+            with open("roi_settings.json", "w") as f:
+                json.dump(self.roi_per_pattern, f)
+            print("Pengaturan ROI berhasil disimpan ke file")
+        except Exception as e:
+            print(f"Error saat menyimpan pengaturan ROI: {e}")
+    
+    def select_pattern(self, pattern_number):
+        """Handler untuk pemilihan pattern"""
+        if 1 <= pattern_number <= 5:
+            self.current_pattern = pattern_number
+            self.update_pattern_label()
+            
+            # Atur ROI sesuai dengan model dan pattern saat ini
+            model_key = str(self.current_model)
+            pattern_key = str(self.current_pattern)
+            
+            try:
+                if model_key in self.roi_per_pattern and pattern_key in self.roi_per_pattern[model_key]:
+                    roi_settings = self.roi_per_pattern[model_key][pattern_key]
+                    self.roi = roi_settings.copy()
+                    print(f"ROI untuk Model {self.current_model}, Pattern {self.current_pattern} berhasil dimuat")
+                else:
+                    # Jika pengaturan ROI belum ada, set nilai default
+                    self.set_default_roi(self.current_model, self.current_pattern)
+                    self.roi = self.roi_per_pattern[model_key][pattern_key].copy()
+                    print(f"Menggunakan ROI default untuk Model {self.current_model}, Pattern {self.current_pattern}")
+            except Exception as e:
+                print(f"Error saat mengatur ROI untuk pattern: {e}")
+    
+    def update_pattern_label(self):
+        """Update label pattern"""
+        model_key = str(self.current_model)
+        pattern_key = str(self.current_pattern)
+        
+        # Dapatkan nama pattern jika ada, atau gunakan default
+        if model_key in self.pattern_names and pattern_key in self.pattern_names[model_key]:
+            pattern_name = self.pattern_names[model_key][pattern_key]
+        else:
+            pattern_name = f"Pattern {self.current_pattern}"
+        
+        self.label_12.setText(f"PATTERN {self.current_pattern}: {pattern_name}")
+        print(f"Pattern aktif: {self.current_pattern} ({pattern_name})")
+    
+    def load_model_names(self):
+        """Muat nama model dari file jika ada, atau gunakan default"""
+        try:
+            if os.path.exists("model_names.json"):
+                import json
+                with open("model_names.json", "r") as f:
+                    self.model_names = json.load(f)
+                    print("Nama model berhasil dimuat dari file")
+            else:
+                # Default nama model
+                self.model_names = {
+                    "1": "K0WL EXPORT",
+                    "2": "Model 2",
+                    "3": "Model 3",
+                    "4": "Model 4",
+                    "5": "Model 5"
+                }
+                print("Menggunakan nama model default")
+        except Exception as e:
+            print(f"Error saat memuat nama model: {e}")
+            # Default nama model jika terjadi error
+            self.model_names = {
+                "1": "K0WL EXPORT",
+                "2": "Model 2",
+                "3": "Model 3",
+                "4": "Model 4",
+                "5": "Model 5"
+            }
+
+    def save_model_names(self):
+        """Simpan nama model ke file"""
+        try:
+            import json
+            with open("model_names.json", "w") as f:
+                json.dump(self.model_names, f)
+            print("Nama model berhasil disimpan ke file")
+        except Exception as e:
+            print(f"Error saat menyimpan nama model: {e}")
 
     def toggle_filter_mode(self):
         """Ubah mode filter kamera"""
@@ -1196,211 +1774,8 @@ class Ui_MainWindow(object):
         elif self.filter_mode == 'hsv':
             self.label_5.setText("STEP PROCESS (Color Highlight)")
 
-    def load_deep_learning_model(self):
-        """Memuat model deep learning untuk deteksi cacat"""
-        try:
-            import tensorflow as tf
-            # Gunakan model yang lebih ringan seperti MobileNetV2 atau EfficientNet-Lite
-            base_model = tf.keras.applications.MobileNetV2(
-                input_shape=(224, 224, 3),
-                include_top=False,
-                weights='imagenet'
-            )
-            
-            # Bekukan layer dasar
-            base_model.trainable = False
-            
-            # Tambahkan layer custom untuk deteksi cacat
-            model = tf.keras.Sequential([
-                base_model,
-                tf.keras.layers.GlobalAveragePooling2D(),
-                tf.keras.layers.Dense(128, activation='relu'),
-                tf.keras.layers.Dense(1, activation='sigmoid')
-            ])
-            
-            self.dl_model = model
-            print("Model deep learning berhasil dimuat")
-            return True
-        except Exception as e:
-            print(f"Error saat memuat model deep learning: {e}")
-            self.dl_model = None
-            return False
-
-    def predict_with_deep_learning(self, image, template):
-        """Gunakan deep learning untuk memprediksi kecocokan dan cacat"""
-        if not hasattr(self, 'dl_model') or self.dl_model is None:
-            return 0.5, False
-        
-        try:
-            import tensorflow as tf
-            import numpy as np
-            
-            # Preprocessing untuk model deep learning
-            img1 = cv2.resize(image, (224, 224))
-            img2 = cv2.resize(template, (224, 224))
-            
-            # Normalisasi gambar
-            img1 = img1 / 255.0
-            img2 = img2 / 255.0
-            
-            # Gabungkan kedua gambar untuk perbandingan
-            diff_img = np.abs(img1 - img2)
-            combined_img = np.concatenate([img1, img2, diff_img], axis=-1)
-            combined_img = np.expand_dims(combined_img, axis=0)
-            
-            # Prediksi dengan model
-            prediction = self.dl_model.predict(combined_img)[0][0]
-            
-            # Interpretasi hasil
-            is_defective = prediction < 0.5
-            similarity_score = 1.0 - prediction if is_defective else prediction
-            
-            return similarity_score, is_defective
-        except Exception as e:
-            print(f"Error saat prediksi dengan deep learning: {e}")
-            return 0.5, False
-
-    def segment_defects(self, image):
-        """Segmentasi area cacat menggunakan teknik segmentasi semantik"""
-        try:
-            # Konversi ke grayscale
-            gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-            
-            # Tingkatkan kontras
-            clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
-            enhanced = clahe.apply(gray)
-            
-            # Deteksi tepi dengan Canny
-            edges = cv2.Canny(enhanced, 30, 150)
-            
-            # Aplikasikan operasi morfologi untuk memperbaiki hasil segmentasi
-            kernel = np.ones((3, 3), np.uint8)
-            dilated = cv2.dilate(edges, kernel, iterations=1)
-            
-            # Temukan kontur
-            contours, _ = cv2.findContours(dilated, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-            
-            # Filter kontur berdasarkan ukuran
-            significant_contours = [cnt for cnt in contours if cv2.contourArea(cnt) > 20]
-            
-            # Buat mask untuk area cacat
-            defect_mask = np.zeros_like(gray)
-            cv2.drawContours(defect_mask, significant_contours, -1, 255, -1)
-            
-            # Hitung persentase area cacat
-            defect_percentage = np.sum(defect_mask > 0) / (defect_mask.shape[0] * defect_mask.shape[1])
-            
-            return defect_mask, defect_percentage, []
-        except Exception as e:
-            print(f"Error saat segmentasi cacat: {e}")
-            return None, 0, []
-
-    def learn_from_inspection(self, image, is_ok):
-        """Pembelajaran adaptif dari hasil inspeksi untuk meningkatkan akurasi"""
-        if not hasattr(self, 'learning_samples'):
-            self.learning_samples = {'ok': [], 'ng': []}
-        
-        # Simpan sampel untuk pembelajaran
-        category = 'ok' if is_ok else 'ng'
-        timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-        filename = f"learning/{category}_{timestamp}.jpg"
-        
-        # Pastikan direktori ada
-        os.makedirs("learning", exist_ok=True)
-        os.makedirs("learning/ok", exist_ok=True)
-        os.makedirs("learning/ng", exist_ok=True)
-        
-        # Simpan gambar
-        cv2.imwrite(f"learning/{category}/{timestamp}.jpg", image)
-        
-        # Tambahkan ke koleksi sampel
-        self.learning_samples[category].append(image)
-        
-        # Jika sudah cukup sampel, perbarui model
-        if len(self.learning_samples['ok']) > 10 and len(self.learning_samples['ng']) > 10:
-            self.update_learning_model()
-        
-        print(f"Sampel pembelajaran disimpan: {category}_{timestamp}.jpg")
-
-    def update_learning_model(self):
-        """Perbarui model pembelajaran dari sampel yang dikumpulkan"""
-        try:
-            import tensorflow as tf
-            from sklearn.model_selection import train_test_split
-            
-            # Siapkan data
-            X = []
-            y = []
-            
-            for img in self.learning_samples['ok']:
-                img_resized = cv2.resize(img, (128, 128))
-                X.append(img_resized)
-                y.append(1)  # 1 untuk OK
-            
-            for img in self.learning_samples['ng']:
-                img_resized = cv2.resize(img, (128, 128))
-                X.append(img_resized)
-                y.append(0)  # 0 untuk NG
-            
-            X = np.array(X) / 255.0
-            y = np.array(y)
-            
-            # Split data
-            X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
-            
-            # Buat model sederhana
-            model = tf.keras.Sequential([
-                tf.keras.layers.Conv2D(32, (3, 3), activation='relu', input_shape=(128, 128, 3)),
-                tf.keras.layers.MaxPooling2D((2, 2)),
-                tf.keras.layers.Conv2D(64, (3, 3), activation='relu'),
-                tf.keras.layers.MaxPooling2D((2, 2)),
-                tf.keras.layers.Conv2D(64, (3, 3), activation='relu'),
-                tf.keras.layers.Flatten(),
-                tf.keras.layers.Dense(64, activation='relu'),
-                tf.keras.layers.Dense(1, activation='sigmoid')
-            ])
-            
-            # Compile model
-            model.compile(optimizer='adam',
-                         loss='binary_crossentropy',
-                         metrics=['accuracy'])
-            
-            # Train model
-            model.fit(X_train, y_train, epochs=5, validation_data=(X_val, y_val), verbose=1)
-            
-            # Simpan model
-            model.save('models/adaptive_model.h5')
-            self.adaptive_model = model
-            
-            print("Model pembelajaran adaptif berhasil diperbarui")
-        except Exception as e:
-            print(f"Error saat memperbarui model pembelajaran: {e}")
-
-    def visualize_detection_results(self, image, defect_info, similarity_info):
-        """Visualisasikan hasil deteksi untuk memudahkan analisis"""
-        result_img = image.copy()
-        
-        # Tambahkan informasi kecocokan
-        cv2.putText(result_img, f"Match: {similarity_info['combined']*100:.2f}%", 
-                    (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
-        
-        # Visualisasikan area cacat jika ada
-        if 'defect_map' in defect_info and defect_info['defect_map'] is not None:
-            defect_map_resized = cv2.resize(defect_info['defect_map'], (image.shape[1], image.shape[0]))
-            defect_overlay = np.zeros_like(result_img)
-            defect_overlay[defect_map_resized > 0] = [0, 0, 255]  # Merah untuk area cacat
-            result_img = cv2.addWeighted(result_img, 0.7, defect_overlay, 0.3, 0)
-        
-        # Tampilkan status
-        status = "OK" if not defect_info['is_defective'] and similarity_info['combined'] > self.template_matching_threshold else "NG"
-        color = (0, 255, 0) if status == "OK" else (0, 0, 255)
-        cv2.putText(result_img, status, 
-                    (image.shape[1] - 60, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, color, 2)
-        
-        return result_img
-
     def save_current_roi_as_template(self):
-        """Simpan ROI saat ini sebagai template baru"""
+        """Simpan ROI saat ini sebagai template baru dengan struktur folder pattern"""
         if not self.camera_active or not hasattr(self, 'current_frame'):
             QMessageBox.warning(self.MainWindow, "Peringatan", "Kamera tidak aktif atau tidak ada frame saat ini")
             return
@@ -1431,44 +1806,103 @@ class Ui_MainWindow(object):
         if not ok:
             return
         
+        # Buat dialog untuk memilih pattern
+        pattern_number, ok = QtWidgets.QInputDialog.getInt(
+            self.MainWindow, 
+            "Pilih Pattern", 
+            "Masukkan nomor pattern (1-5):", 
+            self.current_pattern, 1, 5, 1
+        )
+        
+        if not ok:
+            return
+        
         # Buat nama file dengan timestamp
         timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
         model_dir = os.path.join(self.models_dir, f"model{model_number}")
-        os.makedirs(model_dir, exist_ok=True)
+        pattern_dir = os.path.join(model_dir, f"pattern{pattern_number}")
+        os.makedirs(pattern_dir, exist_ok=True)
         
-        template_path = os.path.join(model_dir, f"template_{timestamp}.jpg")
+        template_path = os.path.join(pattern_dir, f"template_{timestamp}.jpg")
         
         # Simpan gambar dengan kualitas tinggi
         cv2.imwrite(template_path, roi_img, [cv2.IMWRITE_JPEG_QUALITY, 95])
         
         # Tambahkan template baru ke daftar template
         if model_number in self.templates:
-            self.templates[model_number].append({
-                "path": template_path,
-                "image": roi_img,
-                "name": f"template_{timestamp}.jpg",
-                "original_size": roi_img.shape[:2]
-            })
+            if pattern_number in self.templates[model_number]:
+                self.templates[model_number][pattern_number].append({
+                    "path": template_path,
+                    "image": roi_img,
+                    "name": f"template_{timestamp}.jpg",
+                    "original_size": roi_img.shape[:2]
+                })
         
         QMessageBox.information(
             self.MainWindow, 
             "Sukses", 
-            f"Template baru berhasil disimpan ke Model {model_number}\nUkuran: {roi_img.shape[1]}x{roi_img.shape[0]} piksel"
+            f"Template baru berhasil disimpan ke Model {model_number}, Pattern {pattern_number}\nUkuran: {roi_img.shape[1]}x{roi_img.shape[0]} piksel"
         )
         
         print(f"Template baru berhasil disimpan: {template_path} (ukuran: {roi_img.shape})")
         
-        # Update model label jika model yang dipilih adalah model saat ini
-        if model_number == self.current_model:
+        # Update template count jika model dan pattern yang dipilih adalah yang aktif
+        if model_number == self.current_model and pattern_number == self.current_pattern:
             self.update_model_label()
 
-    def load_bounding_boxes(self, filename="bounding_boxes.json"):
-        """Fungsi dummy untuk kompatibilitas"""
-        pass
+    def update_match_value_display(self):
+        """Update tampilan nilai kecocokan pada progress bar"""
+        if hasattr(self, 'current_match_value'):
+            match_percentage = self.current_match_value * 100
+            
+            # Update nilai progress bar
+            self.match_progress_bar.setValue(int(match_percentage))
+            
+            # Update label persentase
+            self.label_match_percentage.setText(f"{match_percentage:.2f}%")
+            
+            # Ubah warna berdasarkan nilai kecocokan
+            if match_percentage >= self.template_matching_threshold * 100:
+                self.label_match_percentage.setStyleSheet("font-size: 14pt; font-weight: bold; color: green; qproperty-alignment: 'AlignCenter';")
+                # Tambahkan indikator PASS
+                self.label_match_percentage.setText(f"{match_percentage:.2f}% (PASS)")
+            else:
+                self.label_match_percentage.setStyleSheet("font-size: 14pt; font-weight: bold; color: red; qproperty-alignment: 'AlignCenter';")
+                # Tambahkan indikator FAIL
+                self.label_match_percentage.setText(f"{match_percentage:.2f}% (FAIL)")
+        else:
+            # Jika belum ada nilai kecocokan
+            self.match_progress_bar.setValue(0)
+            self.label_match_percentage.setText("0.00%")
+            self.label_match_percentage.setStyleSheet("font-size: 14pt; font-weight: bold; color: black; qproperty-alignment: 'AlignCenter';")
 
-    def save_bounding_boxes(self, filename="bounding_boxes.json"):
-        """Fungsi dummy untuk kompatibilitas"""
-        pass
+    def update_threshold_marker(self):
+        """Update tampilan marker threshold pada progress bar"""
+        threshold_percentage = self.template_matching_threshold * 100
+        
+        # Update label threshold
+        # self.label_threshold_marker.setText(f"Threshold: {threshold_percentage:.0f}%")
+        
+        # Update posisi dan ukuran kotak threshold
+        progress_width = self.match_progress_bar.width()
+        threshold_position = int(progress_width * threshold_percentage / 100)
+        
+        # Posisikan kotak threshold di progress bar
+        self.threshold_box.setGeometry(QtCore.QRect(threshold_position - 5, 0, 10, self.match_progress_bar.height()))
+        
+        # Ubah warna kotak threshold berdasarkan nilai
+        if threshold_percentage >= 70:
+            color = "darkgreen"
+        elif threshold_percentage >= 50:
+            color = "darkblue"
+        else:
+            color = "darkred"
+        
+        self.threshold_box.setStyleSheet(f"background-color: transparent; border: 3px solid {color};")
+        
+        # Tambahkan label threshold di atas kotak
+        # threshold_text = f"{threshold_percentage:.0f}%"
+        # self.label_threshold_marker.setText(f"Threshold: {threshold_text}")
 
 if __name__ == "__main__":
     import sys

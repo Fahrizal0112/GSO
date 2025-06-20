@@ -14,14 +14,17 @@ import cv2
 import numpy as np
 import os
 import glob
+import json
 
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1225, 630)
+        MainWindow.resize(1225, 800)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
+        
+        # --- BAGIAN KAMERA ---
         
         # Label untuk menampilkan feed kamera
         self.label = QtWidgets.QLabel(self.centralwidget)
@@ -30,182 +33,203 @@ class Ui_MainWindow(object):
         self.label.setText("")
         self.label.setObjectName("label")
         
-        self.toolButton = QtWidgets.QToolButton(self.centralwidget)
-        self.toolButton.setGeometry(QtCore.QRect(20, 400, 851, 41))
-        self.toolButton.setObjectName("toolButton")
+        # Info kamera
+        self.label_25 = QtWidgets.QLabel(self.centralwidget)
+        self.label_25.setGeometry(QtCore.QRect(20, 30, 80, 16))
+        self.label_25.setText("Kamera Aktif:")
+        self.label_25.setObjectName("label_25")
         
-        self.label_2 = QtWidgets.QLabel(self.centralwidget)
-        self.label_2.setGeometry(QtCore.QRect(890, 20, 71, 16))
-        self.label_2.setObjectName("label_2")
-        
-        # Label untuk menampilkan template model
-        self.label_3 = QtWidgets.QLabel(self.centralwidget)
-        self.label_3.setGeometry(QtCore.QRect(890, 50, 321, 191))
-        self.label_3.setFrameShape(QtWidgets.QFrame.Box)
-        self.label_3.setText("")
-        self.label_3.setObjectName("label_3")
-        
-        self.label_4 = QtWidgets.QLabel(self.centralwidget)
-        self.label_4.setGeometry(QtCore.QRect(890, 250, 71, 16))
-        self.label_4.setObjectName("label_4")
-        
-        # Input dan label untuk ROI
-        self.label_5 = QtWidgets.QLabel(self.centralwidget)
-        self.label_5.setGeometry(QtCore.QRect(890, 270, 16, 16))
-        self.label_5.setObjectName("label_5")
-        
-        # Input X untuk ROI
-        self.label_6 = QtWidgets.QLineEdit(self.centralwidget)
-        self.label_6.setGeometry(QtCore.QRect(910, 270, 60, 16))
-        self.label_6.setText("")
-        self.label_6.setObjectName("label_6")
-        
-        self.label_7 = QtWidgets.QLabel(self.centralwidget)
-        self.label_7.setGeometry(QtCore.QRect(890, 290, 20, 20))
-        self.label_7.setObjectName("label_7")
-        
-        # Input W untuk ROI
-        self.label_8 = QtWidgets.QLineEdit(self.centralwidget)
-        self.label_8.setGeometry(QtCore.QRect(910, 290, 60, 16))
-        self.label_8.setText("")
-        self.label_8.setObjectName("label_8")
-        
-        self.label_9 = QtWidgets.QLabel(self.centralwidget)
-        self.label_9.setGeometry(QtCore.QRect(1020, 270, 16, 16))
-        self.label_9.setObjectName("label_9")
-        
-        self.label_10 = QtWidgets.QLabel(self.centralwidget)
-        self.label_10.setGeometry(QtCore.QRect(1020, 290, 20, 20))
-        self.label_10.setObjectName("label_10")
-        
-        # Input H untuk ROI
-        self.label_11 = QtWidgets.QLineEdit(self.centralwidget)
-        self.label_11.setGeometry(QtCore.QRect(1040, 290, 60, 16))
-        self.label_11.setText("")
-        self.label_11.setObjectName("label_11")
-        
-        # Input Y untuk ROI
-        self.label_12 = QtWidgets.QLineEdit(self.centralwidget)
-        self.label_12.setGeometry(QtCore.QRect(1040, 270, 60, 16))
-        self.label_12.setText("")
-        self.label_12.setObjectName("label_12")
-        
-        # Tombol untuk mengatur ROI
-        self.toolButton_2 = QtWidgets.QToolButton(self.centralwidget)
-        self.toolButton_2.setGeometry(QtCore.QRect(890, 320, 321, 31))
-        self.toolButton_2.setObjectName("toolButton_2")
-        
-        self.label_13 = QtWidgets.QLabel(self.centralwidget)
-        self.label_13.setGeometry(QtCore.QRect(890, 360, 161, 16))
-        self.label_13.setObjectName("label_13")
-        
-        self.label_14 = QtWidgets.QLabel(self.centralwidget)
-        self.label_14.setGeometry(QtCore.QRect(890, 390, 101, 16))
-        self.label_14.setObjectName("label_14")
-        
-        self.textEdit = QtWidgets.QTextEdit(self.centralwidget)
-        self.textEdit.setGeometry(QtCore.QRect(1020, 380, 181, 31))
-        self.textEdit.setObjectName("textEdit")
-        
-        # Combobox untuk memilih model
-        self.comboBox = QtWidgets.QComboBox(self.centralwidget)
-        self.comboBox.setGeometry(QtCore.QRect(1020, 420, 191, 26))
-        self.comboBox.setObjectName("comboBox")
-        self.comboBox.addItem("")
-        self.comboBox.addItem("")
-        self.comboBox.addItem("")
-        self.comboBox.addItem("")
-        self.comboBox.addItem("")
-        self.comboBox.currentIndexChanged.connect(self.model_changed)
-        
-        self.label_15 = QtWidgets.QLabel(self.centralwidget)
-        self.label_15.setGeometry(QtCore.QRect(890, 420, 101, 16))
-        self.label_15.setObjectName("label_15")
-        
-        self.label_16 = QtWidgets.QLabel(self.centralwidget)
-        self.label_16.setGeometry(QtCore.QRect(890, 460, 101, 16))
-        self.label_16.setObjectName("label_16")
-        
-        self.label_17 = QtWidgets.QLabel(self.centralwidget)
-        self.label_17.setGeometry(QtCore.QRect(890, 490, 121, 20))
-        self.label_17.setObjectName("label_17")
-        
-        # Input untuk threshold template matching
-        self.textEdit_2 = QtWidgets.QTextEdit(self.centralwidget)
-        self.textEdit_2.setGeometry(QtCore.QRect(1020, 490, 181, 31))
-        self.textEdit_2.setObjectName("textEdit_2")
-        
-        # Tombol untuk menyimpan pengaturan
-        self.toolButton_3 = QtWidgets.QToolButton(self.centralwidget)
-        self.toolButton_3.setGeometry(QtCore.QRect(890, 530, 321, 31))
-        self.toolButton_3.setObjectName("toolButton_3")
-        
-        # Label untuk informasi kamera
-        self.label_18 = QtWidgets.QLabel(self.centralwidget)
-        self.label_18.setGeometry(QtCore.QRect(20, 30, 111, 16))
-        self.label_18.setObjectName("label_18")
-        
-        self.label_19 = QtWidgets.QLabel(self.centralwidget)
-        self.label_19.setGeometry(QtCore.QRect(240, 30, 161, 16))
-        self.label_19.setObjectName("label_19")
-        
-        self.label_20 = QtWidgets.QLabel(self.centralwidget)
-        self.label_20.setGeometry(QtCore.QRect(500, 30, 161, 16))
-        self.label_20.setObjectName("label_20")
-        
-        # Label untuk menampilkan informasi kamera aktif
         self.label_21 = QtWidgets.QLabel(self.centralwidget)
-        self.label_21.setGeometry(QtCore.QRect(100, 30, 120, 16))
+        self.label_21.setGeometry(QtCore.QRect(110, 30, 120, 16))
         self.label_21.setText("Kamera 0")
         self.label_21.setObjectName("label_21")
+        
+        self.label_26 = QtWidgets.QLabel(self.centralwidget)
+        self.label_26.setGeometry(QtCore.QRect(240, 30, 120, 16))
+        self.label_26.setText("Dimensi (W x H):")
+        self.label_26.setObjectName("label_26")
         
         self.label_22 = QtWidgets.QLabel(self.centralwidget)
         self.label_22.setGeometry(QtCore.QRect(370, 30, 120, 16))
         self.label_22.setText("")
         self.label_22.setObjectName("label_22")
         
+        self.label_27 = QtWidgets.QLabel(self.centralwidget)
+        self.label_27.setGeometry(QtCore.QRect(500, 30, 120, 16))
+        self.label_27.setText("Jumlah Template:")
+        self.label_27.setObjectName("label_27")
+        
         self.label_23 = QtWidgets.QLabel(self.centralwidget)
-        self.label_23.setGeometry(QtCore.QRect(600, 30, 120, 16))
+        self.label_23.setGeometry(QtCore.QRect(630, 30, 120, 16))
         self.label_23.setText("")
         self.label_23.setObjectName("label_23")
         
-        self.textEdit_3 = QtWidgets.QTextEdit(self.centralwidget)
-        self.textEdit_3.setGeometry(QtCore.QRect(1020, 450, 181, 31))
-        self.textEdit_3.setObjectName("textEdit_3")
+        # Tombol kamera
+        self.toolButton = QtWidgets.QToolButton(self.centralwidget)
+        self.toolButton.setGeometry(QtCore.QRect(20, 400, 851, 41))
+        self.toolButton.setText("Ambil Gambar")
+        self.toolButton.setObjectName("toolButton")
         
-        # Tombol untuk menampilkan template berikutnya
-        self.toolButton_4 = QtWidgets.QToolButton(self.centralwidget)
-        self.toolButton_4.setGeometry(QtCore.QRect(1150, 50, 61, 31))
-        self.toolButton_4.setText("Next")
-        self.toolButton_4.setObjectName("toolButton_4")
-        self.toolButton_4.clicked.connect(self.next_template)
+        # --- BAGIAN TEMPLATE ---
         
-        # Tombol untuk menampilkan template sebelumnya
+        self.label_2 = QtWidgets.QLabel(self.centralwidget)
+        self.label_2.setGeometry(QtCore.QRect(890, 20, 71, 16))
+        self.label_2.setText("Template")
+        self.label_2.setObjectName("label_2")
+        
+        # Label template counter
+        self.label_24 = QtWidgets.QLabel(self.centralwidget)
+        self.label_24.setGeometry(QtCore.QRect(1000, 20, 211, 16))
+        self.label_24.setText("Template 0 / 0")
+        self.label_24.setObjectName("label_24")
+        
+        # Tampilan template
+        self.label_3 = QtWidgets.QLabel(self.centralwidget)
+        self.label_3.setGeometry(QtCore.QRect(890, 50, 321, 191))
+        self.label_3.setFrameShape(QtWidgets.QFrame.Box)
+        self.label_3.setText("")
+        self.label_3.setObjectName("label_3")
+        
+        # Tombol prev/next template
         self.toolButton_5 = QtWidgets.QToolButton(self.centralwidget)
         self.toolButton_5.setGeometry(QtCore.QRect(890, 50, 61, 31))
         self.toolButton_5.setText("Prev")
         self.toolButton_5.setObjectName("toolButton_5")
         self.toolButton_5.clicked.connect(self.prev_template)
         
-        # Label untuk menunjukkan template yang sedang ditampilkan
-        self.label_24 = QtWidgets.QLabel(self.centralwidget)
-        self.label_24.setGeometry(QtCore.QRect(1000, 20, 211, 16))
-        self.label_24.setText("Template 0 / 0")
-        self.label_24.setObjectName("label_24")
+        self.toolButton_4 = QtWidgets.QToolButton(self.centralwidget)
+        self.toolButton_4.setGeometry(QtCore.QRect(1150, 50, 61, 31))
+        self.toolButton_4.setText("Next")
+        self.toolButton_4.setObjectName("toolButton_4")
+        self.toolButton_4.clicked.connect(self.next_template)
         
-        # Tombol untuk menambahkan ROI di tengah
+        # --- BAGIAN ROI ---
+        
+        self.label_4 = QtWidgets.QLabel(self.centralwidget)
+        self.label_4.setGeometry(QtCore.QRect(890, 250, 321, 16))
+        self.label_4.setText("ROI")
+        self.label_4.setStyleSheet("font-weight: bold;")
+        self.label_4.setObjectName("label_4")
+        
+        # Input X, Y, W, H untuk ROI
+        self.label_5 = QtWidgets.QLabel(self.centralwidget)
+        self.label_5.setGeometry(QtCore.QRect(890, 280, 30, 16))
+        self.label_5.setText("X :")
+        self.label_5.setObjectName("label_5")
+        
+        self.label_6 = QtWidgets.QLineEdit(self.centralwidget)
+        self.label_6.setGeometry(QtCore.QRect(920, 280, 70, 22))
+        self.label_6.setText("")
+        self.label_6.setObjectName("label_6")
+        
+        self.label_9 = QtWidgets.QLabel(self.centralwidget)
+        self.label_9.setGeometry(QtCore.QRect(1020, 280, 30, 16))
+        self.label_9.setText("Y :")
+        self.label_9.setObjectName("label_9")
+        
+        self.label_12 = QtWidgets.QLineEdit(self.centralwidget)
+        self.label_12.setGeometry(QtCore.QRect(1050, 280, 70, 22))
+        self.label_12.setText("")
+        self.label_12.setObjectName("label_12")
+        
+        self.label_7 = QtWidgets.QLabel(self.centralwidget)
+        self.label_7.setGeometry(QtCore.QRect(890, 310, 30, 16))
+        self.label_7.setText("W :")
+        self.label_7.setObjectName("label_7")
+        
+        self.label_8 = QtWidgets.QLineEdit(self.centralwidget)
+        self.label_8.setGeometry(QtCore.QRect(920, 310, 70, 22))
+        self.label_8.setText("")
+        self.label_8.setObjectName("label_8")
+        
+        self.label_10 = QtWidgets.QLabel(self.centralwidget)
+        self.label_10.setGeometry(QtCore.QRect(1020, 310, 30, 16))
+        self.label_10.setText("H :")
+        self.label_10.setObjectName("label_10")
+        
+        self.label_11 = QtWidgets.QLineEdit(self.centralwidget)
+        self.label_11.setGeometry(QtCore.QRect(1050, 310, 70, 22))
+        self.label_11.setText("")
+        self.label_11.setObjectName("label_11")
+        
+        # Tombol ROI
+        self.toolButton_2 = QtWidgets.QToolButton(self.centralwidget)
+        self.toolButton_2.setGeometry(QtCore.QRect(890, 340, 160, 31))
+        self.toolButton_2.setText("Terapkan ROI")
+        self.toolButton_2.setObjectName("toolButton_2")
+        
         self.toolButton_6 = QtWidgets.QToolButton(self.centralwidget)
-        self.toolButton_6.setGeometry(QtCore.QRect(1130, 320, 81, 31))
+        self.toolButton_6.setGeometry(QtCore.QRect(1060, 340, 151, 31))
         self.toolButton_6.setText("Center ROI")
         self.toolButton_6.setObjectName("toolButton_6")
         
-        # Tombol untuk menambahkan ROI dengan klik dan seret
         self.toolButton_7 = QtWidgets.QToolButton(self.centralwidget)
-        self.toolButton_7.setGeometry(QtCore.QRect(890, 360, 161, 31))
+        self.toolButton_7.setGeometry(QtCore.QRect(890, 380, 321, 31))
         self.toolButton_7.setText("Draw ROI on Image")
         self.toolButton_7.setObjectName("toolButton_7")
         self.toolButton_7.clicked.connect(self.toggle_draw_roi)
         
+        # --- BAGIAN PARAMETER PENCOCOKAN ---
+        
+        # Header Parameter Pencocokan
+        self.label_13 = QtWidgets.QLabel(self.centralwidget)
+        self.label_13.setGeometry(QtCore.QRect(890, 430, 321, 30))
+        self.label_13.setStyleSheet("font-weight: bold; font-size: 14px;")
+        self.label_13.setText("Parameter Pencocokan")
+        self.label_13.setObjectName("label_13")
+        
+        col1_x = 890       # Posisi X untuk label
+        col2_x = 1020      # Posisi X untuk input fields
+        row_height = 40    # Tinggi baris
+        
+        # Baris 2: Nama Model
+        self.label_14 = QtWidgets.QLabel(self.centralwidget)
+        self.label_14.setGeometry(QtCore.QRect(col1_x, 470 + row_height*2, 130, 25))
+        self.label_14.setText("Nama Model :")
+        self.label_14.setObjectName("label_14")
+        
+        self.textEdit = QtWidgets.QTextEdit(self.centralwidget)
+        self.textEdit.setGeometry(QtCore.QRect(col2_x, 470 + row_height*2, 191, 31))
+        self.textEdit.setObjectName("textEdit")
+        
+        # Baris 3: Total Step
+        self.label_15 = QtWidgets.QLabel(self.centralwidget)
+        self.label_15.setGeometry(QtCore.QRect(col1_x, 470 + row_height*3, 120, 25))
+        self.label_15.setText("Total Step :")
+        self.label_15.setObjectName("label_15")
+        
+        self.comboBox = QtWidgets.QComboBox(self.centralwidget)
+        self.comboBox.setGeometry(QtCore.QRect(col2_x, 470 + row_height*3, 181, 31))
+        self.comboBox.setObjectName("comboBox")
+        for i in range(1, 6):
+            self.comboBox.addItem(f"{i}")
+        self.comboBox.currentIndexChanged.connect(self.model_changed)
+        
+        # Baris 5: Threshold
+        self.label_16 = QtWidgets.QLabel(self.centralwidget)
+        self.label_16.setGeometry(QtCore.QRect(col1_x, 470 + row_height*4, 120, 25))
+        self.label_16.setText("Threshold :")
+        self.label_16.setObjectName("label_16")
+        
+        self.textEdit_2 = QtWidgets.QTextEdit(self.centralwidget)
+        self.textEdit_2.setGeometry(QtCore.QRect(col2_x, 470 + row_height*4, 181, 31))
+        self.textEdit_2.setObjectName("textEdit_2")
+        
+        # Baris 6: Nilai threshold saat ini
+        self.label_17 = QtWidgets.QLabel(self.centralwidget)
+        self.label_17.setGeometry(QtCore.QRect(col1_x, 470 + row_height*5, 321, 25))
+        self.label_17.setText("Threshold saat ini: 50.00%")
+        self.label_17.setObjectName("label_17")
+        
+        # Baris 7: Tombol Simpan
+        self.toolButton_3 = QtWidgets.QToolButton(self.centralwidget)
+        self.toolButton_3.setGeometry(QtCore.QRect(col1_x, 470 + row_height*6, 321, 40))
+        self.toolButton_3.setText("Simpan")
+        self.toolButton_3.setStyleSheet("font-size: 14px; font-weight: bold;")
+        self.toolButton_3.setObjectName("toolButton_3")
+        self.toolButton_3.clicked.connect(self.save_settings)
+        
+        # Menu dan statusbar
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 1225, 36))
@@ -214,7 +238,7 @@ class Ui_MainWindow(object):
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
-
+        
         # Simpan referensi ke MainWindow
         self.MainWindow = MainWindow
         
@@ -235,14 +259,20 @@ class Ui_MainWindow(object):
         self.current_template_index = 0
         self.templates = {}
         
+        # Variabel untuk menyimpan nama model
+        self.model_names = {}
+        
+        # Load nama model yang tersimpan atau gunakan default
+        self.load_model_names()
+        
         # Aktifkan mouse events untuk label kamera
         self.label.setMouseTracking(True)
         self.label.mousePressEvent = self.mouse_press_event
         self.label.mouseReleaseEvent = self.mouse_release_event
         self.label.mouseMoveEvent = self.mouse_move_event
         
-        # Connect tombol untuk mengaktifkan kamera
-        self.toolButton.clicked.connect(self.toggle_camera)
+        # Connect tombol untuk mengambil gambar
+        self.toolButton.clicked.connect(self.capture_and_display_template)
         
         # Connect tombol untuk mengatur ROI
         self.toolButton_2.clicked.connect(self.apply_roi)
@@ -259,9 +289,6 @@ class Ui_MainWindow(object):
         # Inisialisasi nilai threshold
         self.threshold_value = 0.5
 
-        # Connect tombol untuk simpan pengaturan
-        self.toolButton_3.clicked.connect(self.save_settings)
-
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
@@ -276,20 +303,10 @@ class Ui_MainWindow(object):
         self.label_9.setText(_translate("MainWindow", "Y :"))
         self.label_10.setText(_translate("MainWindow", "H :"))
         self.toolButton_2.setText(_translate("MainWindow", "Terapkan ROI"))
-        self.label_13.setText(_translate("MainWindow", "Parameter Pencocokan"))
-        self.label_14.setText(_translate("MainWindow", "Nama Model :"))
-        self.comboBox.setItemText(0, _translate("MainWindow", "1"))
-        self.comboBox.setItemText(1, _translate("MainWindow", "2"))
-        self.comboBox.setItemText(2, _translate("MainWindow", "3"))
-        self.comboBox.setItemText(3, _translate("MainWindow", "4"))
-        self.comboBox.setItemText(4, _translate("MainWindow", "5"))
-        self.label_15.setText(_translate("MainWindow", "Total Step :"))
-        self.label_16.setText(_translate("MainWindow", "Threshold :"))
-        self.label_17.setText(_translate("MainWindow", "Nilai Threshold :"))
         self.toolButton_3.setText(_translate("MainWindow", "Simpan"))
-        self.label_18.setText(_translate("MainWindow", "Kamera Aktif:"))
-        self.label_19.setText(_translate("MainWindow", "Dimensi (W x H) :"))
-        self.label_20.setText(_translate("MainWindow", "Jumlah Template :"))
+        self.label_21.setText(_translate("MainWindow", "Kamera Aktif:"))
+        self.label_22.setText(_translate("MainWindow", "Dimensi (W x H) :"))
+        self.label_23.setText(_translate("MainWindow", "Jumlah Template :"))
 
     def toggle_camera(self):
         """Mengaktifkan atau menonaktifkan kamera"""
@@ -351,10 +368,13 @@ class Ui_MainWindow(object):
             # Konversi ke RGB untuk tampilan PyQt
             frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             
+            # Simpan frame asli
+            self.original_frame = frame.copy()
+            
             # Resize frame sesuai dengan ukuran label
             frame_rgb = cv2.resize(frame_rgb, (self.label.width(), self.label.height()))
             
-            # Simpan frame saat ini
+            # Simpan frame yang sudah diresize
             self.current_frame = frame_rgb.copy()
             
             # Gambar ROI pada frame
@@ -382,6 +402,8 @@ class Ui_MainWindow(object):
             self.display_image(frame_rgb)
         except Exception as e:
             print(f"Error saat memperbarui kamera: {e}")
+            import traceback
+            traceback.print_exc()
     
     def display_image(self, img):
         """Tampilkan gambar pada label"""
@@ -393,12 +415,16 @@ class Ui_MainWindow(object):
         self.label.setPixmap(pixmap)
     
     def load_templates(self):
-        """Muat template dari direktori models"""
+        """Muat template dari direktori models dengan struktur pattern"""
         try:
             if not os.path.exists(self.models_dir):
                 os.makedirs(self.models_dir)
                 for i in range(1, 6):
-                    os.makedirs(os.path.join(self.models_dir, f"model{i}"), exist_ok=True)
+                    model_dir = os.path.join(self.models_dir, f"model{i}")
+                    os.makedirs(model_dir, exist_ok=True)
+                    for j in range(1, 6):
+                        pattern_dir = os.path.join(model_dir, f"pattern{j}")
+                        os.makedirs(pattern_dir, exist_ok=True)
                 
                 print(f"Folder models telah dibuat di {os.path.abspath(self.models_dir)}.")
                 print("Silakan tambahkan gambar template di folder tersebut.")
@@ -408,30 +434,41 @@ class Ui_MainWindow(object):
                 model_dir = os.path.join(self.models_dir, f"model{i}")
                 os.makedirs(model_dir, exist_ok=True)
                 
-                image_files = glob.glob(os.path.join(model_dir, "*.jpg")) + \
-                             glob.glob(os.path.join(model_dir, "*.png")) + \
-                             glob.glob(os.path.join(model_dir, "*.jpeg"))
+                self.templates[i] = {}
                 
-                model_templates = []
-                for img_path in image_files:
-                    try:
-                        template = cv2.imread(img_path)
-                        if template is not None:
-                            if len(template.shape) == 2:
-                                template = cv2.cvtColor(template, cv2.COLOR_GRAY2BGR)
-                            elif template.shape[2] == 4:
-                                template = cv2.cvtColor(template, cv2.COLOR_RGBA2BGR)
-                            
-                            model_templates.append({
-                                "path": img_path,
-                                "image": template,
-                                "name": os.path.basename(img_path)
-                            })
-                            print(f"Template berhasil dimuat: {img_path} (ukuran: {template.shape})")
-                    except Exception as e:
-                        print(f"Error saat memuat template {img_path}: {e}")
-                
-                self.templates[i] = model_templates
+                for j in range(1, 6):
+                    pattern_dir = os.path.join(model_dir, f"pattern{j}")
+                    os.makedirs(pattern_dir, exist_ok=True)
+                    
+                    image_files = glob.glob(os.path.join(pattern_dir, "*.jpg")) + \
+                                 glob.glob(os.path.join(pattern_dir, "*.png")) + \
+                                 glob.glob(os.path.join(pattern_dir, "*.jpeg"))
+                    
+                    pattern_templates = []
+                    for img_path in image_files:
+                        try:
+                            template = cv2.imread(img_path)
+                            if template is not None:
+                                if len(template.shape) == 2:
+                                    template = cv2.cvtColor(template, cv2.COLOR_GRAY2BGR)
+                                elif template.shape[2] == 4:
+                                    template = cv2.cvtColor(template, cv2.COLOR_RGBA2BGR)
+                                
+                                pattern_templates.append({
+                                    "path": img_path,
+                                    "image": template,
+                                    "name": os.path.basename(img_path),
+                                    "original_size": template.shape[:2]
+                                })
+                                print(f"Template berhasil dimuat: {img_path} (ukuran: {template.shape})")
+                        except Exception as e:
+                            print(f"Error saat memuat template {img_path}: {e}")
+                    
+                    self.templates[i][j] = pattern_templates
+            
+            # Inisialisasi current_pattern jika belum ada
+            if not hasattr(self, 'current_pattern'):
+                self.current_pattern = 1
             
             # Update label jumlah template dan tampilan template
             self.update_template_count()
@@ -441,7 +478,11 @@ class Ui_MainWindow(object):
     def update_template_count(self):
         """Update label jumlah template"""
         try:
-            template_count = len(self.templates.get(self.current_model, []))
+            template_count = 0
+            if self.current_model in self.templates:
+                if self.current_pattern in self.templates[self.current_model]:
+                    template_count = len(self.templates[self.current_model][self.current_pattern])
+            
             self.label_23.setText(str(template_count))
             
             # Update label template saat ini
@@ -452,14 +493,18 @@ class Ui_MainWindow(object):
             
             # Tampilkan template saat ini
             self.display_current_template()
-            print(f"Jumlah template di model {self.current_model}: {template_count}")
+            print(f"Jumlah template di model {self.current_model}, pattern {self.current_pattern}: {template_count}")
         except Exception as e:
             print(f"Error saat memperbarui jumlah template: {e}")
     
     def display_current_template(self):
         """Tampilkan template saat ini pada label_3"""
         try:
-            templates = self.templates.get(self.current_model, [])
+            templates = []
+            if self.current_model in self.templates:
+                if self.current_pattern in self.templates[self.current_model]:
+                    templates = self.templates[self.current_model][self.current_pattern]
+            
             if templates and 0 <= self.current_template_index < len(templates):
                 template = templates[self.current_template_index]["image"].copy()
                 
@@ -491,14 +536,22 @@ class Ui_MainWindow(object):
     
     def next_template(self):
         """Tampilkan template berikutnya"""
-        templates = self.templates.get(self.current_model, [])
+        templates = []
+        if self.current_model in self.templates:
+            if self.current_pattern in self.templates[self.current_model]:
+                templates = self.templates[self.current_model][self.current_pattern]
+        
         if templates:
             self.current_template_index = (self.current_template_index + 1) % len(templates)
             self.update_template_count()
     
     def prev_template(self):
         """Tampilkan template sebelumnya"""
-        templates = self.templates.get(self.current_model, [])
+        templates = []
+        if self.current_model in self.templates:
+            if self.current_pattern in self.templates[self.current_model]:
+                templates = self.templates[self.current_model][self.current_pattern]
+        
         if templates:
             self.current_template_index = (self.current_template_index - 1) % len(templates)
             self.update_template_count()
@@ -509,7 +562,12 @@ class Ui_MainWindow(object):
             self.current_model = int(self.comboBox.currentText())
             self.current_template_index = 0
             self.update_template_count()
-            print(f"Model berubah ke: {self.current_model}")
+            
+            # Update textEdit dengan nama model saat ini
+            model_name = self.model_names.get(str(self.current_model), f"Model {self.current_model}")
+            self.textEdit.setText(model_name)
+            
+            print(f"Model berubah ke: {self.current_model} ({model_name})")
         except Exception as e:
             print(f"Error saat mengubah model: {e}")
     
@@ -602,11 +660,55 @@ class Ui_MainWindow(object):
         except Exception as e:
             print(f"Error saat menerapkan ROI: {e}")
 
+    def load_model_names(self):
+        """Muat nama model dari file jika ada, atau gunakan default"""
+        try:
+            if os.path.exists("model_names.json"):
+                with open("model_names.json", "r") as f:
+                    self.model_names = json.load(f)
+                    print("Nama model berhasil dimuat dari file")
+            else:
+                # Default nama model
+                self.model_names = {
+                    "1": "K0WL EXPORT",
+                    "2": "Model 2",
+                    "3": "Model 3",
+                    "4": "Model 4",
+                    "5": "Model 5"
+                }
+                print("Menggunakan nama model default")
+        except Exception as e:
+            print(f"Error saat memuat nama model: {e}")
+            # Default nama model jika terjadi error
+            self.model_names = {
+                "1": "K0WL EXPORT",
+                "2": "Model 2",
+                "3": "Model 3",
+                "4": "Model 4",
+                "5": "Model 5"
+            }
+
+    def save_model_names(self):
+        """Simpan nama model ke file"""
+        try:
+            with open("model_names.json", "w") as f:
+                json.dump(self.model_names, f)
+            print("Nama model berhasil disimpan ke file")
+        except Exception as e:
+            print(f"Error saat menyimpan nama model: {e}")
+
     def save_settings(self):
         """Simpan pengaturan dan tampilkan popup konfirmasi"""
         print("Fungsi save_settings() dipanggil")
         
         try:
+            # Simpan nama model
+            model_name = self.textEdit.toPlainText().strip()
+            if model_name:
+                self.model_names[str(self.current_model)] = model_name
+                self.save_model_names()
+                print(f"Nama model {self.current_model} diubah menjadi: {model_name}")
+            
             # Ambil nilai threshold dari input
             threshold_text = self.textEdit_2.toPlainText()
             print(f"Nilai threshold dari input: {threshold_text}")
@@ -624,15 +726,6 @@ class Ui_MainWindow(object):
                 if 0 <= threshold <= 1:
                     # Simpan nilai threshold
                     self.threshold_value = threshold
-                    
-                    # Tampilkan popup konfirmasi
-                    print("Menampilkan popup konfirmasi...")
-                    QMessageBox.information(
-                        self.MainWindow,
-                        "Sukses",
-                        f"Threshold berhasil diubah menjadi {threshold*100:.2f}%",
-                        QMessageBox.Ok
-                    )
                     
                     # Update label threshold saat ini
                     self.label_17.setText(f"Nilai Threshold: {threshold*100:.2f}%")
@@ -661,12 +754,13 @@ class Ui_MainWindow(object):
             except:
                 pass
             
-            # Simpan model yang dipilih
-            try:
-                self.current_model = int(self.comboBox.currentText())
-                print(f"Model aktif: {self.current_model}")
-            except:
-                pass
+            # Tampilkan popup konfirmasi
+            QMessageBox.information(
+                self.MainWindow,
+                "Sukses",
+                "Pengaturan berhasil disimpan",
+                QMessageBox.Ok
+            )
             
         except Exception as e:
             print(f"Error dalam save_settings: {e}")
@@ -676,6 +770,131 @@ class Ui_MainWindow(object):
                 self.MainWindow,
                 "Error",
                 f"Terjadi kesalahan saat menyimpan pengaturan: {str(e)}",
+                QMessageBox.Ok
+            )
+
+    def capture_and_display_template(self):
+        """Mengambil gambar dari kamera dan menampilkannya sebagai template"""
+        if not self.camera_active or self.camera is None:
+            QMessageBox.warning(self.MainWindow, "Peringatan", "Kamera tidak aktif")
+            return
+        
+        try:
+            # Ambil frame dari kamera
+            ret, frame = self.camera.read()
+            if not ret:
+                print("Tidak dapat membaca frame dari kamera")
+                return
+            
+            # Pastikan frame memiliki ukuran yang sama dengan label
+            frame_resized = cv2.resize(frame, (self.label.width(), self.label.height()))
+            
+            # Ekstrak ROI dari frame yang sudah diresize
+            y1 = max(0, self.roi["y"])
+            y2 = min(self.label.height(), self.roi["y"] + self.roi["h"])
+            x1 = max(0, self.roi["x"])
+            x2 = min(self.label.width(), self.roi["x"] + self.roi["w"])
+            
+            if y2 <= y1 or x2 <= x1:
+                QMessageBox.warning(self.MainWindow, "Peringatan", "ROI tidak valid")
+                return
+            
+            # Crop gambar sesuai ROI
+            roi_img = frame_resized[y1:y2, x1:x2].copy()
+            
+            # Konversi ke RGB untuk tampilan PyQt
+            roi_rgb = cv2.cvtColor(roi_img, cv2.COLOR_BGR2RGB)
+            
+            # Resize template agar muat di label_3
+            template_rgb = cv2.resize(roi_rgb, (self.label_3.width(), self.label_3.height()))
+            
+            # Tampilkan di label_3
+            h, w, ch = template_rgb.shape
+            bytes_per_line = ch * w
+            qt_image = QtGui.QImage(template_rgb.data, w, h, bytes_per_line, QtGui.QImage.Format_RGB888)
+            
+            pixmap = QtGui.QPixmap.fromImage(qt_image)
+            self.label_3.setPixmap(pixmap)
+            
+            # Simpan template saat ini untuk disimpan nanti (simpan gambar asli, bukan yang diresize)
+            self.current_template = cv2.cvtColor(roi_img, cv2.COLOR_RGB2BGR)
+            
+            # Tampilkan dialog konfirmasi
+            reply = QMessageBox.question(
+                self.MainWindow,
+                "Konfirmasi Template",
+                "Apakah Anda ingin menyimpan template ini?",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.Yes
+            )
+            
+            if reply == QMessageBox.Yes:
+                self.save_current_template()
+            
+            print("Template berhasil ditangkap dari kamera")
+        except Exception as e:
+            print(f"Error saat mengambil template: {e}")
+            import traceback
+            traceback.print_exc()
+
+    def save_current_template(self):
+        """Simpan template yang ditampilkan saat ini ke folder"""
+        if not hasattr(self, 'current_template'):
+            QMessageBox.warning(self.MainWindow, "Peringatan", "Tidak ada template untuk disimpan")
+            return
+        
+        try:
+            # Buat nama file dengan timestamp
+            import datetime
+            timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+            
+            # Pastikan direktori model ada
+            model_dir = os.path.join(self.models_dir, f"model{self.current_model}")
+            os.makedirs(model_dir, exist_ok=True)
+            
+            # Buat direktori pattern
+            pattern_dir = os.path.join(model_dir, f"pattern{self.current_pattern}")
+            os.makedirs(pattern_dir, exist_ok=True)
+            
+            template_path = os.path.join(pattern_dir, f"template_{timestamp}.jpg")
+            
+            # Simpan gambar dengan kualitas tinggi
+            cv2.imwrite(template_path, self.current_template, [cv2.IMWRITE_JPEG_QUALITY, 95])
+            
+            # Tambahkan template baru ke daftar template
+            template_data = {
+                "path": template_path,
+                "image": self.current_template,
+                "name": os.path.basename(template_path),
+                "original_size": self.current_template.shape[:2]
+            }
+            
+            # Pastikan struktur templates sesuai dengan struktur di main.py
+            if self.current_model not in self.templates:
+                self.templates[self.current_model] = {}
+            
+            if self.current_pattern not in self.templates[self.current_model]:
+                self.templates[self.current_model][self.current_pattern] = []
+            
+            self.templates[self.current_model][self.current_pattern].append(template_data)
+            
+            # Update jumlah template
+            self.update_template_count()
+            
+            QMessageBox.information(
+                self.MainWindow,
+                "Sukses",
+                f"Template berhasil disimpan ke Model {self.current_model}, Pattern {self.current_pattern}",
+                QMessageBox.Ok
+            )
+            
+            print(f"Template berhasil disimpan: {template_path}")
+        except Exception as e:
+            print(f"Error saat menyimpan template: {e}")
+            QMessageBox.critical(
+                self.MainWindow,
+                "Error",
+                f"Terjadi kesalahan saat menyimpan template: {str(e)}",
                 QMessageBox.Ok
             )
 
