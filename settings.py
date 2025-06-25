@@ -852,8 +852,12 @@ class Ui_MainWindow(object):
             model_dir = os.path.join(self.models_dir, f"model{self.current_model}")
             os.makedirs(model_dir, exist_ok=True)
             
+            # Ambil pattern yang dipilih saat ini
+            selected_pattern = self.current_pattern
+            print(f"Menyimpan template ke Model {self.current_model}, Pattern {selected_pattern}")
+            
             # Buat direktori pattern
-            pattern_dir = os.path.join(model_dir, f"pattern{self.current_pattern}")
+            pattern_dir = os.path.join(model_dir, f"pattern{selected_pattern}")
             os.makedirs(pattern_dir, exist_ok=True)
             
             template_path = os.path.join(pattern_dir, f"template_{timestamp}.jpg")
@@ -873,10 +877,10 @@ class Ui_MainWindow(object):
             if self.current_model not in self.templates:
                 self.templates[self.current_model] = {}
             
-            if self.current_pattern not in self.templates[self.current_model]:
-                self.templates[self.current_model][self.current_pattern] = []
+            if selected_pattern not in self.templates[self.current_model]:
+                self.templates[self.current_model][selected_pattern] = []
             
-            self.templates[self.current_model][self.current_pattern].append(template_data)
+            self.templates[self.current_model][selected_pattern].append(template_data)
             
             # Update jumlah template
             self.update_template_count()
@@ -884,7 +888,7 @@ class Ui_MainWindow(object):
             QMessageBox.information(
                 self.MainWindow,
                 "Sukses",
-                f"Template berhasil disimpan ke Model {self.current_model}, Pattern {self.current_pattern}",
+                f"Template berhasil disimpan ke Model {self.current_model}, Pattern {selected_pattern}",
                 QMessageBox.Ok
             )
             

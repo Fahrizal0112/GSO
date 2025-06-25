@@ -665,65 +665,87 @@ class Ui_MainWindow(object):
         if not self.camera_active:
             return
         
-        x, y = event.x() - self.camera_geometry["x"], event.y() - self.camera_geometry["y"]
+        # Hitung koordinat relatif terhadap frame kamera
+        # Koordinat absolut dikurangi dengan posisi frame kamera
+        mouse_x = event.pos().x()
+        mouse_y = event.pos().y()
         
-        # Cek apakah klik di dalam ROI
-        if (self.roi["x"] <= x <= self.roi["x"] + self.roi["w"] and 
-            self.roi["y"] <= y <= self.roi["y"] + self.roi["h"]):
-            # Mulai drag ROI
-            self.dragging_roi = True
-            self.drag_start_x = x
-            self.drag_start_y = y
-            self.drag_roi_start = self.roi.copy()
-        else:
-            # Mulai membuat ROI baru
-            self.creating_roi = True
-            self.roi_start_point = (x, y)
+        # Periksa apakah klik berada di dalam area frame kamera
+        if (0 <= mouse_x <= self.camera_geometry["width"] and 
+            0 <= mouse_y <= self.camera_geometry["height"]):
+            
+            # Cek apakah klik di dalam ROI
+            if (self.roi["x"] <= mouse_x <= self.roi["x"] + self.roi["w"] and 
+                self.roi["y"] <= mouse_y <= self.roi["y"] + self.roi["h"]):
+                # Mulai drag ROI
+                self.dragging_roi = True
+                self.drag_start_x = mouse_x
+                self.drag_start_y = mouse_y
+                self.drag_roi_start = self.roi.copy()
+                print(f"Mulai drag ROI dari posisi: {mouse_x}, {mouse_y}")
+            else:
+                # Mulai membuat ROI baru
+                self.creating_roi = True
+                self.roi_start_point = (mouse_x, mouse_y)
+                print(f"Mulai membuat ROI baru dari posisi: {mouse_x}, {mouse_y}")
     
     def mouse_move_event(self, event):
         """Handler untuk mouse move yang hanya mengatur ROI utama"""
         if not self.camera_active:
             return
         
-        x, y = event.x() - self.camera_geometry["x"], event.y() - self.camera_geometry["y"]
+        # Hitung koordinat relatif terhadap frame kamera
+        mouse_x = event.pos().x()
+        mouse_y = event.pos().y()
         
         if hasattr(self, 'dragging_roi') and self.dragging_roi:
             # Pindahkan ROI
-            dx = x - self.drag_start_x
-            dy = y - self.drag_start_y
+            dx = mouse_x - self.drag_start_x
+            dy = mouse_y - self.drag_start_y
             
             self.roi["x"] = max(0, min(self.camera_geometry["width"] - self.roi["w"], 
                                       self.drag_roi_start["x"] + dx))
             self.roi["y"] = max(0, min(self.camera_geometry["height"] - self.roi["h"], 
                                       self.drag_roi_start["y"] + dy))
+            
+            print(f"Dragging ROI ke: {self.roi['x']}, {self.roi['y']}")
         
         elif hasattr(self, 'creating_roi') and self.creating_roi and hasattr(self, 'roi_start_point'):
             # Buat ROI baru
             start_x, start_y = self.roi_start_point
-            width = x - start_x
-            height = y - start_y
+            width = mouse_x - start_x
+            height = mouse_y - start_y
             
             # Update ROI sementara untuk visualisasi
             self.temp_roi = {
-                "x": start_x if width >= 0 else x,
-                "y": start_y if height >= 0 else y,
+                "x": start_x if width >= 0 else mouse_x,
+                "y": start_y if height >= 0 else mouse_y,
                 "w": abs(width),
                 "h": abs(height)
             }
+            
+            print(f"Creating ROI: {self.temp_roi}")
     
     def mouse_release_event(self, event):
         """Handler untuk mouse release yang hanya mengatur ROI utama"""
         if not self.camera_active:
             return
         
+        # Hitung koordinat relatif terhadap frame kamera
+        mouse_x = event.pos().x()
+        mouse_y = event.pos().y()
+        
         if hasattr(self, 'dragging_roi') and self.dragging_roi:
             self.dragging_roi = False
+            print(f"ROI selesai dipindahkan ke: {self.roi['x']}, {self.roi['y']}")
         
         elif hasattr(self, 'creating_roi') and self.creating_roi and hasattr(self, 'temp_roi'):
             # Tetapkan ROI baru jika ukurannya valid
             if self.temp_roi["w"] > 20 and self.temp_roi["h"] > 20:
                 self.roi = self.temp_roi.copy()
-                print(f"ROI baru: x={self.roi['x']}, y={self.roi['y']}, w={self.roi['w']}, h={self.roi['h']}")
+                print(f"ROI baru dibuat: x={self.roi['x']}, y={self.roi['y']}, w={self.roi['w']}, h={self.roi['h']}")
+            else:
+                print(f"ROI terlalu kecil, minimal 20x20 piksel")
             
             self.creating_roi = False
             if hasattr(self, 'temp_roi'):
