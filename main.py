@@ -1474,7 +1474,7 @@ class Ui_MainWindow(object):
                                    f"Tidak ada template di Model {model_number}.\n"
                                    f"Silakan tambahkan gambar template di folder models/model{model_number}/pattern[1-5]/")
     def refresh_cameras(self):
-        print("Mencari Kamera Yang tersedia")
+        print("Mencari kamera yang tersedia...")
         self.available_cameras = []
         
         for i in range(4):
@@ -1483,37 +1483,41 @@ class Ui_MainWindow(object):
                 ret, frame = cap.read()
                 if ret:
                     self.available_cameras.append(i)
-                    print("Kamera {i} tersedia")
+                    print(f"Kamera {i} tersedia")
                 else:
-                    print(f"kamera {i} tidak dapat membaca")
-                    cap.release()
+                    print(f"Kamera {i} tidak dapat membaca frame")
+                cap.release()
             else:
-                print("Kamera {i} tidak dapat dibuka")
-
-        camera_action = {
+                print(f"Kamera {i} tidak dapat dibuka")
+        
+        camera_actions = [
             self.actionCamera_0,
-            self.actionCamera_1,
+            self.actionCamera_1, 
             self.actionCamera_2,
             self.actionCamera_3
-        }
-        for i, action in enumerate(camera_action):
+        ]
+        
+        for i, action in enumerate(camera_actions):
             if i in self.available_cameras:
                 action.setEnabled(True)
                 if i == self.camera_index:
                     action.setChecked(True)
-                    action.setText("Camera {i} Active")
+                    action.setText(f"Camera {i} (Active)")
                 else:
                     action.setChecked(False)
-                    action.setText("Camera {i}")
+                    action.setText(f"Camera {i}")  
             else:
                 action.setEnabled(False)
                 action.setChecked(False)
-                action.setText(f"camera {i} not available")
+                action.setText(f"Camera {i} (Not Available)")
+        
         if not self.available_cameras:
-            QMessageBox.warning(self.MainWindow, "Warning","Tidak ada kamera yang tersedia")
+            QMessageBox.warning(self.MainWindow, "Peringatan", 
+                            "Tidak ada kamera yang tersedia!")
         else:
-            print(f"total kamera tersedia: {len(self.available_cameras)}")
+            print(f"Total kamera tersedia: {len(self.available_cameras)}")
             if self.camera_index not in self.available_cameras:
+                # Jika kamera saat ini tidak tersedia, pilih kamera pertama yang tersedia
                 self.camera_index = self.available_cameras[0]
                 print(f"Beralih ke kamera {self.camera_index}")
 
@@ -1536,7 +1540,7 @@ class Ui_MainWindow(object):
         if was_active:
             QtCore.QTimer.singleShot(580, self.start_camera)
         QMessageBox.information(self.MainWindow, "info",f"Kamera berhasil beralih ke camera {camera_index}")
-        
+
     
     def update_model_label(self):
         """Update label model dan nama model di header"""
