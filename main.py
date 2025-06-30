@@ -20,7 +20,7 @@ class Ui_MainWindow(object):
         self.pushButton_4 = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton_4.setGeometry(QtCore.QRect(0, 570, 1461, 51))
         self.pushButton_4.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        icon = QtGui.QIcon()
+        icon = QtGui.QIcon()                                    
         icon.addPixmap(QtGui.QPixmap("../../../../Downloads/setting-5-svgrepo-com.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.pushButton_4.setIcon(icon)
         self.pushButton_4.setIconSize(QtCore.QSize(32, 32))
@@ -122,16 +122,11 @@ class Ui_MainWindow(object):
         self.label_11 = QtWidgets.QLabel(self.centralwidget)
         self.label_11.setGeometry(QtCore.QRect(10, 140, 60, 16))
         self.label_11.setObjectName("label_11")
-        self.filterButton = QtWidgets.QPushButton(self.centralwidget)
-        self.filterButton.setGeometry(QtCore.QRect(960, 650, 120, 61))
-        self.filterButton.setText("Filter Mode")
-        self.filterButton.setObjectName("filterButton")
-        self.filterButton.clicked.connect(self.toggle_filter_mode)
-        self.saveTemplateButton = QtWidgets.QPushButton(self.centralwidget)
-        self.saveTemplateButton.setGeometry(QtCore.QRect(450, 650, 120, 61))
-        self.saveTemplateButton.setText("Save Template")
-        self.saveTemplateButton.setObjectName("saveTemplateButton")
-        self.saveTemplateButton.clicked.connect(self.save_current_roi_as_template)
+        # self.filterButton = QtWidgets.QPushButton(self.centralwidget)
+        # self.filterButton.setGeometry(QtCore.QRect(960, 650, 120, 61))
+        # self.filterButton.setText("Filter Mode")
+        # self.filterButton.setObjectName("filterButton")
+        # self.filterButton.clicked.connect(self.toggle_filter_mode)
         self.label_12 = QtWidgets.QLabel(self.centralwidget)
         self.label_12.setGeometry(QtCore.QRect(10, 140, 1171, 20))
         self.label_12.setStyleSheet("background-color: black;\n"
@@ -248,6 +243,28 @@ class Ui_MainWindow(object):
         self.actionPattern_5 = QAction(MainWindow)
         self.actionPattern_5.setText("Pattern 5")
         self.actionPattern_5.setObjectName("actionPattern_5")
+        self.actionCamera_0 = QtWidgets.QAction(MainWindow)
+        self.actionCamera_0.setObjectName("actionCamera_0")
+        self.actionCamera_1 = QtWidgets.QAction(MainWindow)
+        self.actionCamera_1.setObjectName("actionCamera_1")
+        self.actionCamera_2 = QtWidgets.QAction(MainWindow)
+        self.actionCamera_2.setObjectName("actionCamera_2")
+        self.actionCamera_3 = QtWidgets.QAction(MainWindow)
+        self.actionCamera_3.setObjectName("actionCamera_3")
+        self.actionRefresh_Cameras = QtWidgets.QAction(MainWindow)
+        self.actionRefresh_Cameras.setObjectName("actionRefresh_Cameras")
+        
+        self.camera_index = 0
+        self.available_cameras = []
+
+        # Tambahkan actions ke menu Camera
+        self.menuCamera.addAction(self.actionCamera_0)
+        self.menuCamera.addAction(self.actionCamera_1)
+        self.menuCamera.addAction(self.actionCamera_2)
+        self.menuCamera.addAction(self.actionCamera_3)
+        self.menuCamera.addSeparator()
+        self.menuCamera.addAction(self.actionRefresh_Cameras)
+        
         self.menuModels.addAction(self.actionModel_1)
         self.menuModels.addAction(self.actionModel_2)
         self.menuModels.addAction(self.actionModel_3)
@@ -357,6 +374,16 @@ class Ui_MainWindow(object):
         self.actionPattern_4.triggered.connect(lambda: self.select_pattern(4))
         self.actionPattern_5.triggered.connect(lambda: self.select_pattern(5))
         
+        # Koneksi actions kamera
+        self.actionCamera_0.triggered.connect(lambda: self.select_camera(0))
+        self.actionCamera_1.triggered.connect(lambda: self.select_camera(1))
+        self.actionCamera_2.triggered.connect(lambda: self.select_camera(2))
+        self.actionCamera_3.triggered.connect(lambda: self.select_camera(3))
+        self.actionRefresh_Cameras.triggered.connect(self.refresh_cameras)
+        
+        # Refresh daftar kamera saat startup
+        self.refresh_cameras()
+        
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
         
@@ -396,9 +423,15 @@ class Ui_MainWindow(object):
         self.actionPattern_3.setText(_translate("MainWindow", "Pattern 3"))
         self.actionPattern_4.setText(_translate("MainWindow", "Pattern 4"))
         self.actionPattern_5.setText(_translate("MainWindow", "Pattern 5"))
-        self.saveTemplateButton.setText(_translate("MainWindow", "Simpan Template"))
         self.label_12.setText(_translate("MainWindow", "PATTERN 1"))
         self.label_match_title.setText(_translate("MainWindow", "Nilai Kecocokan"))
+
+        # Set text untuk actions kamera
+        self.actionCamera_0.setText(_translate("MainWindow", "Camera 0"))
+        self.actionCamera_1.setText(_translate("MainWindow", "Camera 1"))
+        self.actionCamera_2.setText(_translate("MainWindow", "Camera 2"))
+        self.actionCamera_3.setText(_translate("MainWindow", "Camera 3"))
+        self.actionRefresh_Cameras.setText(_translate("MainWindow", "Refresh Cameras"))
 
     def open_settings(self):
         if self.process_active:
@@ -478,17 +511,21 @@ class Ui_MainWindow(object):
     
     def start_camera(self):
         if self.camera is None:
-            self.camera = cv2.VideoCapture(0)
+            self.camera = cv2.VideoCapture(self.camera_index)
             if not self.camera.isOpened():
-                print("Error: Tidak dapat membuka kamera")
+                print(f"Error: Tidak dapat membuka kamera {self.camera_index}")
+                QMessageBox.critical(self.MainWindow, "Error", 
+                                   f"Tidak dapat membuka Camera {self.camera_index}!")
                 return
+            else:
+                print(f"Kamera {self.camera_index} berhasil dibuka")
         
         self.camera_active = True
         self.camera_timer.start(30)
         self.toolButton_3.setText("STOP CAMERA")
         
         QtCore.QTimer.singleShot(500, self.center_roi)
-    
+
     def center_roi(self):
         """Tempatkan ROI di tengah dengan ukuran yang fleksibel"""
         # Gunakan ukuran yang proporsional dengan ukuran frame
@@ -519,7 +556,13 @@ class Ui_MainWindow(object):
         self.toolButton_3.setText("CAMERA")
         blank_image = np.zeros((self.frame.height(), self.frame.width(), 3), dtype=np.uint8)
         self.display_image(blank_image)
-    
+        
+        # Tutup kamera
+        if self.camera is not None:
+            self.camera.release()
+            self.camera = None
+            print(f"Kamera {self.camera_index} ditutup")
+
     def update_camera(self):
         """Update tampilan kamera dengan satu bounding box untuk deteksi"""
         if self.camera_active and self.camera is not None:
@@ -1265,8 +1308,10 @@ class Ui_MainWindow(object):
             print(f"Error saat mengambil ROI dari settings: {e}")
 
     def closeEvent(self, event):
+        # Pastikan kamera ditutup saat aplikasi ditutup
         if self.camera is not None:
             self.camera.release()
+        event.accept()
 
     def add_center_box(self):
         if not self.camera_active:
@@ -1428,6 +1473,70 @@ class Ui_MainWindow(object):
                 QMessageBox.warning(self.MainWindow, "Peringatan", 
                                    f"Tidak ada template di Model {model_number}.\n"
                                    f"Silakan tambahkan gambar template di folder models/model{model_number}/pattern[1-5]/")
+    def refresh_cameras(self):
+        print("Mencari Kamera Yang tersedia")
+        self.available_cameras = []
+        
+        for i in range(4):
+            cap = cv2.VideoCapture(i)
+            if cap.isOpened():
+                ret, frame = cap.read()
+                if ret:
+                    self.available_cameras.append(i)
+                    print("Kamera {i} tersedia")
+                else:
+                    print(f"kamera {i} tidak dapat membaca")
+                    cap.release()
+            else:
+                print("Kamera {i} tidak dapat dibuka")
+
+        camera_action = {
+            self.actionCamera_0,
+            self.actionCamera_1,
+            self.actionCamera_2,
+            self.actionCamera_3
+        }
+        for i, action in enumerate(camera_action):
+            if i in self.available_cameras:
+                action.setEnabled(True)
+                if i == self.camera_index:
+                    action.setChecked(True)
+                    action.setText("Camera {i} Active")
+                else:
+                    action.setChecked(False)
+                    action.setText("Camera {i}")
+            else:
+                action.setEnabled(False)
+                action.setChecked(False)
+                action.setText(f"camera {i} not available")
+        if not self.available_cameras:
+            QMessageBox.warning(self.MainWindow, "Warning","Tidak ada kamera yang tersedia")
+        else:
+            print(f"total kamera tersedia: {len(self.available_cameras)}")
+            if self.camera_index not in self.available_cameras:
+                self.camera_index = self.available_cameras[0]
+                print(f"Beralih ke kamera {self.camera_index}")
+
+    def select_camera(self, camera_index):
+        if camera_index not in self.available_cameras:
+            QMessageBox.warning(self.MainWindow,"Warning",f"Kamera {camera_index} tidak tersedia")
+            return
+        was_active = self.camera_active
+        if was_active:
+            self.stop_camera()
+        if self.camera is not None:
+            self.camera.release()
+            self.camera = None
+        old_index = self.camera_index
+        self.camera_index = camera_index
+
+        print(f"Beralih dari kamera {old_index} ke kamera {camera_index}")
+        self.refresh_cameras()
+
+        if was_active:
+            QtCore.QTimer.singleShot(580, self.start_camera)
+        QMessageBox.information(self.MainWindow, "info",f"Kamera berhasil beralih ke camera {camera_index}")
+        
     
     def update_model_label(self):
         """Update label model dan nama model di header"""
@@ -1795,82 +1904,6 @@ class Ui_MainWindow(object):
             self.label_5.setText("STEP PROCESS (Threshold)")
         elif self.filter_mode == 'hsv':
             self.label_5.setText("STEP PROCESS (Color Highlight)")
-
-    def save_current_roi_as_template(self):
-        """Simpan ROI saat ini sebagai template baru dengan struktur folder pattern"""
-        if not self.camera_active or not hasattr(self, 'current_frame'):
-            QMessageBox.warning(self.MainWindow, "Peringatan", "Kamera tidak aktif atau tidak ada frame saat ini")
-            return
-        
-        # Ambil ROI dari frame saat ini
-        y1 = max(0, self.roi["y"])
-        y2 = min(self.camera_geometry["height"], self.roi["y"] + self.roi["h"])
-        x1 = max(0, self.roi["x"])
-        x2 = min(self.camera_geometry["width"], self.roi["x"] + self.roi["w"])
-        
-        if y2 <= y1 or x2 <= x1:
-            QMessageBox.warning(self.MainWindow, "Peringatan", "ROI tidak valid")
-            return
-        
-        roi_img = self.current_frame[y1:y2, x1:x2].copy()
-        
-        # Konversi dari RGB ke BGR untuk OpenCV
-        roi_img = cv2.cvtColor(roi_img, cv2.COLOR_RGB2BGR)
-        
-        # Buat dialog untuk memilih model
-        model_number, ok = QtWidgets.QInputDialog.getInt(
-            self.MainWindow, 
-            "Pilih Model", 
-            "Masukkan nomor model (1-5):", 
-            self.current_model, 1, 5, 1
-        )
-        
-        if not ok:
-            return
-        
-        # Buat dialog untuk memilih pattern
-        pattern_number, ok = QtWidgets.QInputDialog.getInt(
-            self.MainWindow, 
-            "Pilih Pattern", 
-            "Masukkan nomor pattern (1-5):", 
-            self.current_pattern, 1, 5, 1
-        )
-        
-        if not ok:
-            return
-        
-        # Buat nama file dengan timestamp
-        timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-        model_dir = os.path.join(self.models_dir, f"model{model_number}")
-        pattern_dir = os.path.join(model_dir, f"pattern{pattern_number}")
-        os.makedirs(pattern_dir, exist_ok=True)
-        
-        template_path = os.path.join(pattern_dir, f"template_{timestamp}.jpg")
-        
-        # Simpan gambar dengan kualitas tinggi
-        cv2.imwrite(template_path, roi_img, [cv2.IMWRITE_JPEG_QUALITY, 95])
-        
-        # Tambahkan template baru ke daftar template
-        if model_number in self.templates:
-            if pattern_number in self.templates[model_number]:
-                self.templates[model_number][pattern_number].append({
-                    "path": template_path,
-                    "image": roi_img,
-                    "name": f"template_{timestamp}.jpg",
-                    "original_size": roi_img.shape[:2]
-                })
-        
-        QMessageBox.information(
-            self.MainWindow, 
-            "Sukses", 
-            f"Template baru berhasil disimpan ke Model {model_number}, Pattern {pattern_number}\nUkuran: {roi_img.shape[1]}x{roi_img.shape[0]} piksel"
-        )
-        
-        print(f"Template baru berhasil disimpan: {template_path} (ukuran: {roi_img.shape})")
-        
-        # Update template count jika model dan pattern yang dipilih adalah yang aktif
-        if model_number == self.current_model and pattern_number == self.current_pattern:
-            self.update_model_label()
 
     def update_match_value_display(self):
         """Update tampilan nilai kecocokan pada progress bar"""
