@@ -83,12 +83,18 @@ class Ui_MainWindow(object):
         self.label_24.setText("Template 0 / 0")
         self.label_24.setObjectName("label_24")
         
-        # Tampilan template
+        # Tampilan template - UBAH: Untuk menampilkan gambar penuh dan memilih ROI
         self.label_3 = QtWidgets.QLabel(self.centralwidget)
         self.label_3.setGeometry(QtCore.QRect(890, 50, 321, 191))
         self.label_3.setFrameShape(QtWidgets.QFrame.Box)
         self.label_3.setText("")
         self.label_3.setObjectName("label_3")
+        
+        # Aktifkan mouse tracking untuk label template
+        self.label_3.setMouseTracking(True)
+        self.label_3.mousePressEvent = self.template_mouse_press_event
+        self.label_3.mouseReleaseEvent = self.template_mouse_release_event
+        self.label_3.mouseMoveEvent = self.template_mouse_move_event
         
         # Tombol prev/next template
         self.toolButton_5 = QtWidgets.QToolButton(self.centralwidget)
@@ -102,16 +108,23 @@ class Ui_MainWindow(object):
         self.toolButton_4.setText("Next")
         self.toolButton_4.setObjectName("toolButton_4")
         self.toolButton_4.clicked.connect(self.next_template)
+
+        self.toolButton_save_template = QtWidgets.QToolButton(self.centralwidget)
+        self.toolButton_save_template.setGeometry(QtCore.QRect(890, 415, 321, 31))
+        self.toolButton_save_template.setText("Simpan Template dengan ROI")
+        self.toolButton_save_template.setStyleSheet("font-weight: bold; background-color: #4CAF50; color: white;")
+        self.toolButton_save_template.setObjectName("toolButton_save_template")
+        self.toolButton_save_template.clicked.connect(self.save_template_with_roi)
         
-        # --- BAGIAN ROI ---
+        # --- BAGIAN ROI UNTUK TEMPLATE ---
         
         self.label_4 = QtWidgets.QLabel(self.centralwidget)
         self.label_4.setGeometry(QtCore.QRect(890, 250, 321, 16))
-        self.label_4.setText("ROI")
+        self.label_4.setText("ROI Template (Area Deteksi)")
         self.label_4.setStyleSheet("font-weight: bold;")
         self.label_4.setObjectName("label_4")
         
-        # Input X, Y, W, H untuk ROI
+        # Input X, Y, W, H untuk ROI template
         self.label_5 = QtWidgets.QLabel(self.centralwidget)
         self.label_5.setGeometry(QtCore.QRect(890, 280, 30, 16))
         self.label_5.setText("X :")
@@ -119,7 +132,7 @@ class Ui_MainWindow(object):
         
         self.label_6 = QtWidgets.QLineEdit(self.centralwidget)
         self.label_6.setGeometry(QtCore.QRect(920, 280, 70, 22))
-        self.label_6.setText("")
+        self.label_6.setText("0")
         self.label_6.setObjectName("label_6")
         
         self.label_9 = QtWidgets.QLabel(self.centralwidget)
@@ -129,7 +142,7 @@ class Ui_MainWindow(object):
         
         self.label_12 = QtWidgets.QLineEdit(self.centralwidget)
         self.label_12.setGeometry(QtCore.QRect(1050, 280, 70, 22))
-        self.label_12.setText("")
+        self.label_12.setText("0")
         self.label_12.setObjectName("label_12")
         
         self.label_7 = QtWidgets.QLabel(self.centralwidget)
@@ -139,7 +152,7 @@ class Ui_MainWindow(object):
         
         self.label_8 = QtWidgets.QLineEdit(self.centralwidget)
         self.label_8.setGeometry(QtCore.QRect(920, 310, 70, 22))
-        self.label_8.setText("")
+        self.label_8.setText("100")
         self.label_8.setObjectName("label_8")
         
         self.label_10 = QtWidgets.QLabel(self.centralwidget)
@@ -149,25 +162,27 @@ class Ui_MainWindow(object):
         
         self.label_11 = QtWidgets.QLineEdit(self.centralwidget)
         self.label_11.setGeometry(QtCore.QRect(1050, 310, 70, 22))
-        self.label_11.setText("")
+        self.label_11.setText("100")
         self.label_11.setObjectName("label_11")
         
-        # Tombol ROI
+        # Tombol ROI Template
         self.toolButton_2 = QtWidgets.QToolButton(self.centralwidget)
         self.toolButton_2.setGeometry(QtCore.QRect(890, 340, 160, 31))
         self.toolButton_2.setText("Terapkan ROI")
         self.toolButton_2.setObjectName("toolButton_2")
+        self.toolButton_2.clicked.connect(self.apply_template_roi)
         
         self.toolButton_6 = QtWidgets.QToolButton(self.centralwidget)
         self.toolButton_6.setGeometry(QtCore.QRect(1060, 340, 151, 31))
         self.toolButton_6.setText("Center ROI")
         self.toolButton_6.setObjectName("toolButton_6")
+        self.toolButton_6.clicked.connect(self.center_template_roi)
         
         self.toolButton_7 = QtWidgets.QToolButton(self.centralwidget)
         self.toolButton_7.setGeometry(QtCore.QRect(890, 380, 321, 31))
-        self.toolButton_7.setText("Draw ROI on Image")
+        self.toolButton_7.setText("Draw ROI on Template")
         self.toolButton_7.setObjectName("toolButton_7")
-        self.toolButton_7.clicked.connect(self.toggle_draw_roi)
+        self.toolButton_7.clicked.connect(self.toggle_draw_template_roi)
         
         # --- BAGIAN PARAMETER PENCOCOKAN ---
         
@@ -178,9 +193,9 @@ class Ui_MainWindow(object):
         self.label_13.setText("Parameter Pencocokan")
         self.label_13.setObjectName("label_13")
         
-        col1_x = 890       # Posisi X untuk label
-        col2_x = 1020      # Posisi X untuk input fields
-        row_height = 40    # Tinggi baris
+        col1_x = 890      
+        col2_x = 1020     
+        row_height = 40   
         
         # Baris 2: Nama Model
         self.label_14 = QtWidgets.QLabel(self.centralwidget)
@@ -248,11 +263,6 @@ class Ui_MainWindow(object):
         self.camera_timer = QtCore.QTimer()
         self.camera_timer.timeout.connect(self.update_camera)
         
-        # Variabel untuk ROI
-        self.roi = {"x": 0, "y": 0, "w": 100, "h": 100}
-        self.drawing_roi = False
-        self.roi_start_point = None
-        
         # Variabel untuk template
         self.models_dir = "models"
         self.current_model = 1
@@ -262,23 +272,20 @@ class Ui_MainWindow(object):
         # Variabel untuk menyimpan nama model
         self.model_names = {}
         
+        # Variabel untuk ROI template - HANYA INI YANG DISIMPAN
+        self.template_roi = {"x": 0, "y": 0, "w": 100, "h": 100}
+        self.drawing_template_roi = False
+        self.template_roi_start_point = None
+        self.current_full_template = None  # Menyimpan gambar template penuh
+        
+        # Inisialisasi current_pattern
+        self.current_pattern = 1
+        
         # Load nama model yang tersimpan atau gunakan default
         self.load_model_names()
         
-        # Aktifkan mouse events untuk label kamera
-        self.label.setMouseTracking(True)
-        self.label.mousePressEvent = self.mouse_press_event
-        self.label.mouseReleaseEvent = self.mouse_release_event
-        self.label.mouseMoveEvent = self.mouse_move_event
-        
         # Connect tombol untuk mengambil gambar
-        self.toolButton.clicked.connect(self.capture_and_display_template)
-        
-        # Connect tombol untuk mengatur ROI
-        self.toolButton_2.clicked.connect(self.apply_roi)
-        
-        # Connect tombol untuk center ROI
-        self.toolButton_6.clicked.connect(self.center_roi)
+        self.toolButton.clicked.connect(self.capture_full_template)
         
         # Muat template saat inisialisasi
         self.load_templates()
@@ -291,6 +298,92 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
+        
+    def save_template_with_roi(self):
+        """Simpan template dengan informasi ROI"""
+        if not hasattr(self, 'current_full_template') or self.current_full_template is None:
+            QMessageBox.warning(self.MainWindow, "Peringatan", "Ambil gambar template terlebih dahulu")
+            return
+        
+        if self.template_roi["w"] <= 0 or self.template_roi["h"] <= 0:
+            QMessageBox.warning(self.MainWindow, "Peringatan", "Tentukan ROI template terlebih dahulu")
+            return
+        
+        try:
+            # Buat nama file dengan timestamp
+            import datetime
+            timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+            
+            # Pastikan direktori model ada
+            model_dir = os.path.join(self.models_dir, f"model{self.current_model}")
+            os.makedirs(model_dir, exist_ok=True)
+            
+            # Ambil pattern yang dipilih saat ini
+            selected_pattern = self.current_pattern
+            
+            # Buat direktori pattern
+            pattern_dir = os.path.join(model_dir, f"pattern{selected_pattern}")
+            os.makedirs(pattern_dir, exist_ok=True)
+            
+            # Simpan gambar template penuh
+            template_path = os.path.join(pattern_dir, f"template_{timestamp}.jpg")
+            cv2.imwrite(template_path, self.current_full_template, [cv2.IMWRITE_JPEG_QUALITY, 95])
+            
+            # Simpan informasi ROI
+            roi_info = {
+                "x": self.template_roi["x"],
+                "y": self.template_roi["y"], 
+                "w": self.template_roi["w"],
+                "h": self.template_roi["h"],
+                "template_width": self.label_3.width(),
+                "template_height": self.label_3.height(),
+                "original_width": self.current_full_template.shape[1],
+                "original_height": self.current_full_template.shape[0]
+            }
+            
+            roi_path = os.path.join(pattern_dir, f"template_{timestamp}_roi.json")
+            with open(roi_path, 'w') as f:
+                json.dump(roi_info, f)
+            
+            # Tambahkan template baru ke daftar template
+            template_data = {
+                "path": template_path,
+                "image": self.current_full_template,
+                "name": os.path.basename(template_path),
+                "original_size": self.current_full_template.shape[:2],
+                "roi": roi_info
+            }
+            
+            # Pastikan struktur templates
+            if self.current_model not in self.templates:
+                self.templates[self.current_model] = {}
+            
+            if selected_pattern not in self.templates[self.current_model]:
+                self.templates[self.current_model][selected_pattern] = []
+            
+            self.templates[self.current_model][selected_pattern].append(template_data)
+            
+            # Update jumlah template
+            self.update_template_count()
+            
+            QMessageBox.information(
+                self.MainWindow,
+                "Sukses",
+                f"Template dengan ROI berhasil disimpan ke Model {self.current_model}, Pattern {selected_pattern}",
+                QMessageBox.Ok
+            )
+            
+            print(f"Template dengan ROI berhasil disimpan: {template_path}")
+            print(f"ROI info: {roi_info}")
+            
+        except Exception as e:
+            print(f"Error saat menyimpan template: {e}")
+            QMessageBox.critical(
+                self.MainWindow,
+                "Error",
+                f"Terjadi kesalahan saat menyimpan template: {str(e)}",
+                QMessageBox.Ok
+            )
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
@@ -355,7 +448,7 @@ class Ui_MainWindow(object):
         self.display_image(blank_image)
     
     def update_camera(self):
-        """Update tampilan kamera"""
+        """Update tampilan kamera - HAPUS ROI"""
         if not self.camera_active or self.camera is None:
             return
         
@@ -377,34 +470,21 @@ class Ui_MainWindow(object):
             # Simpan frame yang sudah diresize
             self.current_frame = frame_rgb.copy()
             
-            # Gambar ROI pada frame
-            cv2.rectangle(
-                frame_rgb, 
-                (self.roi["x"], self.roi["y"]), 
-                (self.roi["x"] + self.roi["w"], self.roi["y"] + self.roi["h"]), 
-                (255, 0, 0),
-                2
-            )
-            
-            # Jika sedang menggambar ROI
-            if self.drawing_roi and self.roi_start_point:
-                x1, y1 = self.roi_start_point
-                x2, y2 = self.current_roi_point if hasattr(self, 'current_roi_point') else (x1, y1)
-                
-                cv2.rectangle(
-                    frame_rgb,
-                    (x1, y1),
-                    (x2, y2),
-                    (0, 255, 255),
-                    2
-                )
-            
+            # Tampilkan frame kamera tanpa ROI
             self.display_image(frame_rgb)
         except Exception as e:
             print(f"Error saat memperbarui kamera: {e}")
             import traceback
             traceback.print_exc()
-    
+    def display_template_image(self, img):
+        """Tampilkan gambar pada label template"""
+        h, w, ch = img.shape
+        bytes_per_line = ch * w
+        qt_image = QtGui.QImage(img.data, w, h, bytes_per_line, QtGui.QImage.Format_RGB888)
+        
+        pixmap = QtGui.QPixmap.fromImage(qt_image)
+        self.label_3.setPixmap(pixmap)
+
     def display_image(self, img):
         """Tampilkan gambar pada label"""
         h, w, ch = img.shape
@@ -413,7 +493,30 @@ class Ui_MainWindow(object):
         
         pixmap = QtGui.QPixmap.fromImage(qt_image)
         self.label.setPixmap(pixmap)
-    
+    def apply_template_roi(self):
+        """Terapkan ROI template dari input fields"""
+        if not hasattr(self, 'current_full_template') or self.current_full_template is None:
+            QMessageBox.warning(self.MainWindow, "Peringatan", "Ambil gambar template terlebih dahulu")
+            return
+        
+        try:
+            x = int(self.label_6.text())
+            y = int(self.label_12.text())
+            w = int(self.label_8.text())
+            h = int(self.label_11.text())
+            
+            # Pastikan nilai ROI valid
+            if w > 0 and h > 0:
+                self.template_roi = {"x": x, "y": y, "w": w, "h": h}
+                self.update_template_display()
+                print(f"ROI template berhasil diubah: x={x}, y={y}, w={w}, h={h}")
+            else:
+                print("Error: Lebar dan tinggi ROI harus lebih dari 0")
+        except ValueError:
+            print("Error: Nilai ROI harus berupa angka")
+        except Exception as e:
+            print(f"Error saat menerapkan ROI template: {e}")
+
     def load_templates(self):
         """Muat template dari direktori models dengan struktur pattern"""
         try:
@@ -474,7 +577,28 @@ class Ui_MainWindow(object):
             self.update_template_count()
         except Exception as e:
             print(f"Error saat memuat templates: {e}")
-    
+    def update_template_display(self):
+        """Update tampilan template dengan ROI"""
+        if not hasattr(self, 'current_full_template') or self.current_full_template is None:
+            return
+        
+        # Konversi ke RGB dan resize
+        frame_rgb = cv2.cvtColor(self.current_full_template, cv2.COLOR_BGR2RGB)
+        frame_resized = cv2.resize(frame_rgb, (self.label_3.width(), self.label_3.height()))
+        
+        # Gambar ROI pada template
+        template_with_roi = frame_resized.copy()
+        cv2.rectangle(
+            template_with_roi, 
+            (self.template_roi["x"], self.template_roi["y"]), 
+            (self.template_roi["x"] + self.template_roi["w"], self.template_roi["y"] + self.template_roi["h"]), 
+            (255, 0, 0),  # Merah untuk ROI
+            2
+        )
+        
+        # Tampilkan
+        self.display_template_image(template_with_roi)
+
     def update_template_count(self):
         """Update label jumlah template"""
         try:
@@ -533,7 +657,30 @@ class Ui_MainWindow(object):
                 print("Tidak ada template untuk ditampilkan")
         except Exception as e:
             print(f"Error saat menampilkan template: {e}")
-    
+    def center_template_roi(self):
+        """Tempatkan ROI di tengah template"""
+        if not hasattr(self, 'current_full_template') or self.current_full_template is None:
+            QMessageBox.warning(self.MainWindow, "Peringatan", "Ambil gambar template terlebih dahulu")
+            return
+        
+        roi_width = 100
+        roi_height = 100
+        
+        roi_x = (self.label_3.width() - roi_width) // 2
+        roi_y = (self.label_3.height() - roi_height) // 2
+        
+        self.template_roi = {"x": roi_x, "y": roi_y, "w": roi_width, "h": roi_height}
+        
+        # Update input fields
+        self.label_6.setText(str(roi_x))
+        self.label_12.setText(str(roi_y))
+        self.label_8.setText(str(roi_width))
+        self.label_11.setText(str(roi_height))
+        
+        # Update tampilan
+        self.update_template_display()
+        print(f"ROI template dipusatkan: x={roi_x}, y={roi_y}, w={roi_width}, h={roi_height}")
+
     def next_template(self):
         """Tampilkan template berikutnya"""
         templates = []
@@ -570,7 +717,93 @@ class Ui_MainWindow(object):
             print(f"Model berubah ke: {self.current_model} ({model_name})")
         except Exception as e:
             print(f"Error saat mengubah model: {e}")
-    
+    def template_mouse_release_event(self, event):
+        """Handler saat mouse dilepas pada template"""
+        if not self.drawing_template_roi or not self.template_roi_start_point or not hasattr(self, 'current_full_template'):
+            return
+        
+        x, y = event.x(), event.y()
+        x1, y1 = self.template_roi_start_point
+        
+        # Pastikan koordinat dalam urutan yang benar
+        x_start = min(x1, x)
+        y_start = min(y1, y)
+        width = abs(x - x1)
+        height = abs(y - y1)
+        
+        # Update ROI template
+        self.template_roi = {"x": x_start, "y": y_start, "w": width, "h": height}
+        
+        # Update input fields
+        self.label_6.setText(str(x_start))
+        self.label_12.setText(str(y_start))
+        self.label_8.setText(str(width))
+        self.label_11.setText(str(height))
+        
+        # Update tampilan template dengan ROI baru
+        self.update_template_display()
+        
+        # Reset
+        self.template_roi_start_point = None
+        self.drawing_template_roi = False
+        self.toolButton_7.setText("Draw ROI on Template")
+        
+        print(f"ROI template ditetapkan: x={x_start}, y={y_start}, w={width}, h={height}")
+
+    def template_mouse_press_event(self, event):
+        """Handler saat mouse ditekan pada template"""
+        if not self.drawing_template_roi or not hasattr(self, 'current_full_template'):
+            return
+        
+        x, y = event.x(), event.y()
+        self.template_roi_start_point = (x, y)
+        print(f"Mulai menggambar ROI template dari: ({x}, {y})")
+    def template_mouse_move_event(self, event):
+        """Handler saat mouse bergerak pada template"""
+        if not self.drawing_template_roi or not self.template_roi_start_point or not hasattr(self, 'current_full_template'):
+            return
+        
+        x, y = event.x(), event.y()
+        x1, y1 = self.template_roi_start_point
+        
+        # Update tampilan template dengan ROI sementara
+        frame_rgb = cv2.cvtColor(self.current_full_template, cv2.COLOR_BGR2RGB)
+        frame_resized = cv2.resize(frame_rgb, (self.label_3.width(), self.label_3.height()))
+        
+        # Gambar ROI yang sedang digambar
+        cv2.rectangle(
+            frame_resized,
+            (x1, y1),
+            (x, y),
+            (0, 255, 255),  # Kuning untuk ROI sementara
+            2
+        )
+        
+        # Gambar ROI yang sudah ada (jika ada)
+        if self.template_roi["w"] > 0 and self.template_roi["h"] > 0:
+            cv2.rectangle(
+                frame_resized, 
+                (self.template_roi["x"], self.template_roi["y"]), 
+                (self.template_roi["x"] + self.template_roi["w"], self.template_roi["y"] + self.template_roi["h"]), 
+                (255, 0, 0),  # Merah untuk ROI yang sudah ada
+                1
+            )
+        
+        self.display_template_image(frame_resized)
+    def toggle_draw_template_roi(self):
+        """Aktifkan/nonaktifkan mode menggambar ROI pada template"""
+        if not hasattr(self, 'current_full_template') or self.current_full_template is None:
+            QMessageBox.warning(self.MainWindow, "Peringatan", "Ambil gambar template terlebih dahulu")
+            return
+        
+        self.drawing_template_roi = not self.drawing_template_roi
+        if self.drawing_template_roi:
+            self.toolButton_7.setText("Cancel Draw ROI")
+            print("Mode menggambar ROI template diaktifkan")
+        else:
+            self.toolButton_7.setText("Draw ROI on Template")
+            print("Mode menggambar ROI template dinonaktifkan")
+
     def toggle_draw_roi(self):
         """Aktifkan/nonaktifkan mode menggambar ROI"""
         self.drawing_roi = not self.drawing_roi
@@ -772,9 +1005,8 @@ class Ui_MainWindow(object):
                 f"Terjadi kesalahan saat menyimpan pengaturan: {str(e)}",
                 QMessageBox.Ok
             )
-
-    def capture_and_display_template(self):
-        """Mengambil gambar dari kamera dan menampilkannya sebagai template"""
+    def capture_full_template(self):
+        """Mengambil gambar penuh dari kamera dan menampilkannya sebagai template"""
         if not self.camera_active or self.camera is None:
             QMessageBox.warning(self.MainWindow, "Peringatan", "Kamera tidak aktif")
             return
@@ -786,122 +1018,41 @@ class Ui_MainWindow(object):
                 print("Tidak dapat membaca frame dari kamera")
                 return
             
-            # Pastikan frame memiliki ukuran yang sama dengan label
-            frame_resized = cv2.resize(frame, (self.label.width(), self.label.height()))
-            
-            # Ekstrak ROI dari frame yang sudah diresize
-            y1 = max(0, self.roi["y"])
-            y2 = min(self.label.height(), self.roi["y"] + self.roi["h"])
-            x1 = max(0, self.roi["x"])
-            x2 = min(self.label.width(), self.roi["x"] + self.roi["w"])
-            
-            if y2 <= y1 or x2 <= x1:
-                QMessageBox.warning(self.MainWindow, "Peringatan", "ROI tidak valid")
-                return
-            
-            # Crop gambar sesuai ROI
-            roi_img = frame_resized[y1:y2, x1:x2].copy()
+            # Simpan frame asli (ukuran penuh)
+            self.current_full_template = frame.copy()
             
             # Konversi ke RGB untuk tampilan PyQt
-            roi_rgb = cv2.cvtColor(roi_img, cv2.COLOR_BGR2RGB)
+            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             
-            # Resize template agar muat di label_3
-            template_rgb = cv2.resize(roi_rgb, (self.label_3.width(), self.label_3.height()))
+            # Resize frame agar muat di label_3
+            frame_resized = cv2.resize(frame_rgb, (self.label_3.width(), self.label_3.height()))
+            
+            # Gambar ROI pada template
+            template_with_roi = frame_resized.copy()
+            cv2.rectangle(
+                template_with_roi, 
+                (self.template_roi["x"], self.template_roi["y"]), 
+                (self.template_roi["x"] + self.template_roi["w"], self.template_roi["y"] + self.template_roi["h"]), 
+                (255, 0, 0),
+                2
+            )
             
             # Tampilkan di label_3
-            h, w, ch = template_rgb.shape
-            bytes_per_line = ch * w
-            qt_image = QtGui.QImage(template_rgb.data, w, h, bytes_per_line, QtGui.QImage.Format_RGB888)
-            
-            pixmap = QtGui.QPixmap.fromImage(qt_image)
-            self.label_3.setPixmap(pixmap)
-            
-            # Simpan template saat ini untuk disimpan nanti (simpan gambar asli, bukan yang diresize)
-            self.current_template = cv2.cvtColor(roi_img, cv2.COLOR_RGB2BGR)
+            self.display_template_image(template_with_roi)
             
             # Tampilkan dialog konfirmasi
             reply = QMessageBox.question(
                 self.MainWindow,
                 "Konfirmasi Template",
-                "Apakah Anda ingin menyimpan template ini?",
-                QMessageBox.Yes | QMessageBox.No,
-                QMessageBox.Yes
+                "Gambar penuh berhasil diambil. Silakan atur ROI untuk area deteksi, lalu klik 'Simpan Template' jika sudah sesuai.",
+                QMessageBox.Ok
             )
             
-            if reply == QMessageBox.Yes:
-                self.save_current_template()
-            
-            print("Template berhasil ditangkap dari kamera")
+            print("Template penuh berhasil ditangkap dari kamera")
         except Exception as e:
             print(f"Error saat mengambil template: {e}")
             import traceback
             traceback.print_exc()
-
-    def save_current_template(self):
-        """Simpan template yang ditampilkan saat ini ke folder"""
-        if not hasattr(self, 'current_template'):
-            QMessageBox.warning(self.MainWindow, "Peringatan", "Tidak ada template untuk disimpan")
-            return
-        
-        try:
-            # Buat nama file dengan timestamp
-            import datetime
-            timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-            
-            # Pastikan direktori model ada
-            model_dir = os.path.join(self.models_dir, f"model{self.current_model}")
-            os.makedirs(model_dir, exist_ok=True)
-            
-            # Ambil pattern yang dipilih saat ini
-            selected_pattern = self.current_pattern
-            print(f"Menyimpan template ke Model {self.current_model}, Pattern {selected_pattern}")
-            
-            # Buat direktori pattern
-            pattern_dir = os.path.join(model_dir, f"pattern{selected_pattern}")
-            os.makedirs(pattern_dir, exist_ok=True)
-            
-            template_path = os.path.join(pattern_dir, f"template_{timestamp}.jpg")
-            
-            # Simpan gambar dengan kualitas tinggi
-            cv2.imwrite(template_path, self.current_template, [cv2.IMWRITE_JPEG_QUALITY, 95])
-            
-            # Tambahkan template baru ke daftar template
-            template_data = {
-                "path": template_path,
-                "image": self.current_template,
-                "name": os.path.basename(template_path),
-                "original_size": self.current_template.shape[:2]
-            }
-            
-            # Pastikan struktur templates sesuai dengan struktur di main.py
-            if self.current_model not in self.templates:
-                self.templates[self.current_model] = {}
-            
-            if selected_pattern not in self.templates[self.current_model]:
-                self.templates[self.current_model][selected_pattern] = []
-            
-            self.templates[self.current_model][selected_pattern].append(template_data)
-            
-            # Update jumlah template
-            self.update_template_count()
-            
-            QMessageBox.information(
-                self.MainWindow,
-                "Sukses",
-                f"Template berhasil disimpan ke Model {self.current_model}, Pattern {selected_pattern}",
-                QMessageBox.Ok
-            )
-            
-            print(f"Template berhasil disimpan: {template_path}")
-        except Exception as e:
-            print(f"Error saat menyimpan template: {e}")
-            QMessageBox.critical(
-                self.MainWindow,
-                "Error",
-                f"Terjadi kesalahan saat menyimpan template: {str(e)}",
-                QMessageBox.Ok
-            )
-
 
 if __name__ == "__main__":
     import sys
