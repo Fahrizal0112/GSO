@@ -1230,6 +1230,10 @@ class Ui_MainWindow(object):
             print(f"Hasil inspeksi: PASS - Part OK")
             print(f"Nilai kecocokan: {match_value*100:.2f}%")
             
+            # Otomatis buka step2 ketika scan PASS
+            print("Scan PASS - Membuka Step 2...")
+            QtCore.QTimer.singleShot(1000, self.open_step2)  # Delay 1 detik untuk memberikan feedback visual
+            
         else:
             self.label_2.setText("FAIL")
             self.label_2.setStyleSheet("background-color: red; color: white; font-weight: bold; font-size: 16pt; qproperty-alignment: 'AlignCenter';")
